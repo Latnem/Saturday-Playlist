@@ -1,8 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>Chatsworth Sign Language</title>
 <style>
   :root{
@@ -100,57 +101,321 @@
 #ptTitleEdit { display: grid !important; }
 
 </style>
+<style id="half-checklists-style">
+  /* Force both Watchtower and Public Talk checklist boxes to same fixed width */
+  #playlistCard #pl_checklist,
+  #publicTalkInput {
+    width: 460px !important;
+    box-sizing: border-box;
+    margin: 0;
+    display: block;
+    align-self: flex-start;
+  }
+  #playlistCard .field[style*="align-items:start"] .controls {
+    align-items: flex-start !important;
+  }
+</style>
+<style id="first-card-spacing">
+  /* Pull the first card even closer to the buttons with -20px margin */
+  #exportImportBar {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .card:first-of-type {
+    margin-top: -20px !important;  /* ultra tight spacing */
+  }
+</style>
+<style id="show-pills-style">
+/* Pill styling for Watchtower 'Show:' options */
+#playlistCard .sub label.show-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:0.35rem;
+  padding:0.25rem 0.6rem;
+  margin-right:0.35rem;
+  border:1px solid #ccc;
+  border-radius:999px;
+  background:#f6f6f6;
+  cursor:pointer;
+  user-select:none;
+}
+#playlistCard .sub label.show-pill:hover{ background:#e9e9e9; }
+#playlistCard .sub label.show-pill input[type="radio"]{
+  appearance:none;
+  -webkit-appearance:none;
+  width:0.9em; height:0.9em;
+  border:1px solid #777;
+  border-radius:50%;
+  position:relative;
+  margin:0;
+}
+#playlistCard .sub label.show-pill input[type="radio"]:checked::after{
+  content:"";
+  position:absolute;
+  top:2px; left:2px;
+  width:0.55em; height:0.55em;
+  border-radius:50%;
+  background:#555;
+}
+</style>
+<style id="publictalk-checklist-style">
+  #publicTalkCard textarea,
+  #publicTalkCard .checklist-container {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+  }
+</style>
+<style id="watchtower-checklist-match-style">
+  /* Match Watchtower checklist input to Public Talk: half width, same look */
+  #playlistCard #pl_customEditor textarea#pl_customInput {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-sizing: border-box;
+    min-height: 120px;
+  }
+  #playlistCard #pl_customEditor .btn#pl_makeChecklist {
+    margin-top: 8px;
+  }
+</style>
+<style id="watchtower-checklist-appearance-sync">
+  /* Make Watchtower checklist (input + generated list) match Public Talk */
+  /* Input already matched earlier; ensure button spacing */
+  #playlistCard #pl_customEditor textarea#pl_customInput {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-sizing: border-box;
+    min-height: 120px;
+  }
+  #playlistCard #pl_customEditor #pl_makeChecklist.btn { margin-top: 8px; }
 
-</head>
+  /* Generated checklist container + list width to half, left-aligned */
+  #playlistCard #pl_checklist,
+  #playlistCard #pl_checklist > ul {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+  }
+
+  /* Match item spacing/label alignment like Public Talk */
+  #playlistCard #pl_checklist li {
+    margin: 6px 0;
+  }
+  #playlistCard #pl_checklist label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+</style>
+<style id="unified-checklist-style">
+  /* Unify checklist appearance between Public Talk and Watchtower */
+
+  /* Input fields */
+  #publicTalkCard textarea,
+  #playlistCard #pl_customEditor textarea#pl_customInput {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-sizing: border-box;
+    min-height: 120px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+  }
+
+  /* Generated checklist containers */
+  #publicTalkCard .checklist-container,
+  #playlistCard #pl_checklist,
+  #playlistCard #pl_checklist > ul {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+  }
+
+  /* Checklist items */
+  #publicTalkCard .checklist-container li,
+  #playlistCard #pl_checklist li {
+    margin: 6px 0;
+  }
+
+  /* Label alignment */
+  #publicTalkCard .checklist-container label,
+  #playlistCard #pl_checklist label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Checkbox size */
+  #publicTalkCard .checklist-container input[type="checkbox"],
+  #playlistCard #pl_checklist input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+</style>
+<style id="publictalk-media-clone-style">
+  /* Clone Public Talk → Media checklist look onto Watchtower checklist */
+  /* Container: half width, left aligned, consistent font */
+  #publicTalkCard .checklist-container,
+  #playlistCard .checklist-container {
+    max-width: 50%;
+    width: 50%;
+    display: block;
+    text-align: left;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+  }
+
+  /* Input textarea visual (for paste/custom editor) */
+  #publicTalkCard textarea,
+  #playlistCard #pl_customEditor textarea#pl_customInput {
+    max-width: 50%;
+    width: 50%;
+    display: block;
+    text-align: left;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-sizing: border-box;
+    min-height: 120px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+  }
+  #playlistCard #pl_customEditor #pl_makeChecklist.btn { margin-top: 8px; }
+
+  /* UL list style parity */
+  #publicTalkCard .checklist-container > ul.list.checklist,
+  #playlistCard .checklist-container > ul.list.checklist,
+  #playlistCard #pl_checklist > ul.list.checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* LI spacing and label alignment */
+  #publicTalkCard .checklist-container li,
+  #playlistCard .checklist-container li,
+  #playlistCard #pl_checklist li {
+    margin: 6px 0;
+  }
+  #publicTalkCard .checklist-container label,
+  #playlistCard .checklist-container label,
+  #playlistCard #pl_checklist label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    line-height: 1.35;
+  }
+
+  /* Checkbox sizing to match */
+  #publicTalkCard .checklist-container input[type="checkbox"],
+  #playlistCard .checklist-container input[type="checkbox"],
+  #playlistCard #pl_checklist input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+</style>
+<style id="publictalk-media-halfwidth-style">
+  /* Restrict Public Talk Media converted checklist to half width */
+  #publicTalkCard .checklist-container,
+  #publicTalkCard .checklist-container ul {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+  }
+</style>
+<style id="media-watchtower-halfwidth-style">
+  /* Restrict both Public Talk Media and Watchtower converted checklists to half width */
+  #publicTalkCard .checklist-container,
+  #publicTalkCard .checklist-container ul,
+  #playlistCard .checklist-container,
+  #playlistCard .checklist-container ul,
+  #playlistCard #pl_checklist,
+  #playlistCard #pl_checklist ul {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+  }
+</style>
+<style id="sat-topbar-clone">.top-row{
+    display:flex; justify-content:flex-end; align-items:center; gap:10px;
+    margin: 6px auto -18px auto; max-width:900px; padding: 0 16px;
+  }
+.btn{
+    cursor:pointer; border:1px solid var(--border);
+    border-radius:9999px; font-weight:600; padding:10px 16px;
+    background:#eef2f7; color:#111827;
+    box-shadow:0 1px 1px rgba(0,0,0,.03);
+    transition:transform .08s ease, filter .15s ease, box-shadow .15s ease;
+  }
+.btn:hover{ filter:brightness(.98); box-shadow:0 2px 6px rgba(0,0,0,.06); }
+.btn:active{ transform:translateY(1px); }</style></head>
 <body>
-
-  <div id="clearAllTopAligned" style="display:flex; justify-content:flex-end; margin: 6px auto 14px auto; max-width:900px; padding: 0 16px;"><button id="btnClearSaved" title="Clear all saved role inputs">Clear all</button></div>
+<div id="clearAllTopAligned">
+<div class="top-row" id="exportImportBar"><button class="btn" id="btnImport">Load</button><button class="btn" id="btnExport">Save</button><input accept="application/json" id="importFile" style="display:none;" type="file"/><button class="btn" id="btnClearSaved" title="Clear all saved role inputs">Clear all</button></div>
+</div>
 <div class="wrap">
-
-    <!-- Header -->
-    <div class="card">
-  <div style="height:24px; background:#723690; border-radius:12px 12px 0 0; margin:-20px -20px 16px -20px"></div>
-      <h1>Chatsworth Sign Language<br><span id="meetingDate" style="font-size:1.35rem; font-weight:500; display:inline-block; margin-bottom:10px;"></span></h1>
-      <div id="dateLine" class="date-line" style="display:none"></div>
-
-      <!-- Opening Prayer -->
-      <div class="field" id="openingEdit">
-        <div class="label"><label for="openingInput">Opening Prayer:</label></div>
-        <div class="controls">
-          <input id="openingInput" type="text"/>
-          <button id="openingSubmit" class="btn-green" title="Save">✔</button>
-        </div>
-      </div>
-      <div class="field hidden" id="openingDisplay">
-        <div class="label">Opening Prayer:</div>
-        <div class="controls">
-          <span id="openingName"></span>
-          <button id="openingEditBtn" class="btn-red" title="Edit">✕</button>
-        </div>
-      </div>
-
-      <!-- Chairman -->
-      <div class="field" id="chairEdit">
-        <div class="label"><label for="chairInput">Chairman:</label></div>
-        <div class="controls">
-          <input id="chairInput" type="text"/>
-          <button id="chairSubmit" class="btn-green" title="Save">✔</button>
-        </div>
-      </div>
-      <div class="field hidden" id="chairDisplay">
-        <div class="label">Chairman:</div>
-        <div class="controls">
-          <span id="chairName"></span>
-          <button id="chairEditBtn" class="btn-red" title="Edit">✕</button>
-        </div>
-      </div>
-
-      <!-- Songs: always-visible dropdowns -->
-      <div class="field">
-        <div class="label"><label for="song1Input">Song 1:</label></div>
-        <div class="controls">
-          <select id="song1Input">
-            <option value="">Select a song…</option>
+<!-- Header -->
+<div class="card">
+<div style="height:24px; background:#723690; border-radius:12px 12px 0 0; margin:-20px -20px 16px -20px"></div>
+<h1>Chatsworth Sign Language<br/><span id="meetingDate" style="font-size:1.35rem; font-weight:500; display:inline-block; margin-bottom:10px;"></span></h1>
+<div class="date-line" id="dateLine" style="display:none"></div>
+<!-- Opening Prayer -->
+<div class="field" id="openingEdit">
+<div class="label"><label for="openingInput">Opening Prayer:</label></div>
+<div class="controls">
+<input id="openingInput" type="text"/>
+<button class="btn-green" id="openingSubmit" title="Save">✔</button>
+</div>
+</div>
+<div class="field hidden" id="openingDisplay">
+<div class="label">Opening Prayer:</div>
+<div class="controls">
+<span id="openingName"></span>
+<button class="btn-red" id="openingEditBtn" title="Edit">✕</button>
+</div>
+</div>
+<!-- Chairman -->
+<div class="field" id="chairEdit">
+<div class="label"><label for="chairInput">Chairman:</label></div>
+<div class="controls">
+<input id="chairInput" type="text"/>
+<button class="btn-green" id="chairSubmit" title="Save">✔</button>
+</div>
+</div>
+<div class="field hidden" id="chairDisplay">
+<div class="label">Chairman:</div>
+<div class="controls">
+<span id="chairName"></span>
+<button class="btn-red" id="chairEditBtn" title="Edit">✕</button>
+</div>
+</div>
+<!-- Songs: always-visible dropdowns -->
+<div class="field">
+<div class="label"><label for="song1Input">Song 1:</label></div>
+<div class="controls">
+<select id="song1Input">
+<option value="">Select a song…</option>
 <option value="1">1 — Jehovah’s Attributes</option>
 <option value="2">2 — Jehovah Is Your Name</option>
 <option value="3">3 — Our Strength, Our Hope, Our Confidence</option>
@@ -312,15 +577,14 @@
 <option value="159">159 — Give Jehovah Glory</option>
 <option value="160">160 — “Good News”!</option>
 <option value="161">161 — To Do Your Will Is My Delight</option>
-          </select> <span id="song3Title" class="song-title"></span> <span id="song2Title" class="song-title"></span> <span id="song1Title" class="song-title"></span>
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="label"><label for="song2Input">Song 2:</label></div>
-        <div class="controls">
-          <select id="song2Input">
-            <option value="">Select a song…</option>
+</select> <span class="song-title" id="song3Title"></span> <span class="song-title" id="song2Title"></span> <span class="song-title" id="song1Title"></span>
+</div>
+</div>
+<div class="field">
+<div class="label"><label for="song2Input">Song 2:</label></div>
+<div class="controls">
+<select id="song2Input">
+<option value="">Select a song…</option>
 <option value="1">1 — Jehovah’s Attributes</option>
 <option value="2">2 — Jehovah Is Your Name</option>
 <option value="3">3 — Our Strength, Our Hope, Our Confidence</option>
@@ -482,15 +746,14 @@
 <option value="159">159 — Give Jehovah Glory</option>
 <option value="160">160 — “Good News”!</option>
 <option value="161">161 — To Do Your Will Is My Delight</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="label"><label for="song3Input">Song 3:</label></div>
-        <div class="controls">
-          <select id="song3Input">
-            <option value="">Select a song…</option>
+</select>
+</div>
+</div>
+<div class="field">
+<div class="label"><label for="song3Input">Song 3:</label></div>
+<div class="controls">
+<select id="song3Input">
+<option value="">Select a song…</option>
 <option value="1">1 — Jehovah’s Attributes</option>
 <option value="2">2 — Jehovah Is Your Name</option>
 <option value="3">3 — Our Strength, Our Hope, Our Confidence</option>
@@ -652,151 +915,133 @@
 <option value="159">159 — Give Jehovah Glory</option>
 <option value="160">160 — “Good News”!</option>
 <option value="161">161 — To Do Your Will Is My Delight</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Closing Prayer -->
-      <div class="field" id="prayerEdit">
-        <div class="label"><label for="prayerInput">Closing Prayer:</label></div>
-        <div class="controls">
-          <input id="prayerInput" type="text"/>
-          <button id="prayerSubmit" class="btn-green" title="Save">✔</button>
-        </div>
-      </div>
-      <div class="field hidden" id="prayerDisplay">
-        <div class="label">Closing Prayer:</div>
-        <div class="controls">
-          <span id="prayerName"></span>
-          <button id="prayerEditBtn" class="btn-red" title="Edit">✕</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Public Talk -->
-
-  <div id="publicTalkCard" class="card">
-      <h2>Public Talk</h2>
-
-      <div class="field" id="ptSpeakerEdit">
-        <div class="label"><label for="ptSpeakerInput">Speaker:</label></div>
-        <div class="controls">
-          <input id="ptSpeakerInput" type="text"/>
-          <button id="ptSpeakerSubmit" class="btn-green" title="Save">✔</button>
-        </div>
-      </div>
-      <div class="field hidden" id="ptSpeakerDisplay">
-        <div class="label">Speaker:</div>
-        <div class="controls">
-          <span id="ptSpeakerName"></span>
-          <button id="ptSpeakerEditBtn" class="btn-red" title="Edit">✕</button>
-        </div>
-      </div>
-
-      <div class="field" id="ptCongEdit">
-        <div class="label"><label for="ptCongInput">Congregation:</label></div>
-        <div class="controls">
-          <input id="ptCongInput" type="text"/>
-          <button id="ptCongSubmit" class="btn-green" title="Save">✔</button>
-        </div>
-      </div>
-      <div class="field hidden" id="ptCongDisplay">
-        <div class="label">Congregation:</div>
-        <div class="controls">
-          <span id="ptCongName"></span>
-          <button id="ptCongEditBtn" class="btn-red" title="Edit">✕</button>
-        </div>
-      </div>
-
-      <div class="field" id="ptTitleEdit"><div class="label"><label for="ptTitleInput">Theme:</label></div><div class="controls"><input id="ptTitleInput" type="text" readonly placeholder="Select a theme…"  style="min-width:520px; max-width:840px;" /><button id="ptThemeOpen" class="muted-btn" type="button" title="Select Theme">Select</button></div></div><!-- Inline Theme Picker (hidden by default) --><div id="ptThemePicker" class="card" style="display:none; padding:12px; margin-top:8px;"><div class="field" style="grid-template-columns: 120px 1fr;"><div class="label">Search:</div><div class="controls"><input id="ptThemeSearch" type="text" placeholder="Type to filter themes"/></div></div><div style="max-height:40vh; overflow:auto; border:1px solid var(--border); border-radius:10px;"><ul id="ptThemeList" class="list" style="padding:8px; margin:0;"></ul></div><div style="display:flex; gap:10px; margin-top:10px;"><button id="ptThemeClose" class="muted-btn" type="button">Close</button><span class="sub">Click a theme to select it.</span></div></div>
-      <div class="field hidden" id="ptTitleDisplay">
-        <div class="label">Theme:</div>
-        <div class="controls">
-          <span id="ptTitleName"></span>
-          <button id="ptTitleEditBtn" class="btn-red" title="Edit">✕</button>
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="label"><label for="publicTalkInput">Media:</label></div>
-        <div class="controls" style="flex-direction:column; align-items:stretch">
-          <textarea id="publicTalkInput" placeholder="Paste media checklist items here"></textarea>
-          <div id="pt_btn_row" style="display:flex; gap:10px; margin-top:10px">
-            <button id="btnMakePT" class="btn-green">Make checklist</button>
-            <button id="btnClearPT" class="muted-btn">Clear</button>
-          </div>
-          <div id="pt_checklist_container" style="margin-top:10px; border:1px dashed var(--border); padding:8px; border-radius:10px; max-height:50vh; overflow:auto">
-            <ul id="pt_checklist" class="list checklist"></ul>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    
-    <!-- Playlist (JW Library) -->
-    <div id="playlistCard" class="card">
-      <h2>Watchtower</h2>
-      <div class="sub"><span id="pl_weekRange"></span></div>
-
-      <div class="field">
-        <div class="label"><label for="pl_fileInput">File:</label></div>
-        <div class="controls">
-          <input id="pl_fileInput" type="file" accept=".jwlplaylist,.jwlibrary"/>
-          <button id="pl_extractBtn" class="muted-btn" disabled>Extract</button>
-          <span id="pl_status" class="sub"></span>
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="label">Show:</div>
-        <div class="controls">
-          <label><input id="pl_filterAll" type="checkbox"> All</label>
-          <label title="Exclude Title / Title Page / Subheading / Q / Review / R"><input id="pl_filterPreset" type="checkbox" checked> Filtered</label>
-          <label><input id="pl_filterCustom" type="checkbox"> Custom</label>
-        </div>
-      </div>
-
-      <div id="pl_customFilters" class="field hidden">
-        <div class="label">Custom rules:</div>
-        <div class="controls" style="flex-direction:column; align-items:stretch">
-          <input id="pl_excludeExact" type="text" placeholder="Exclude exact labels (comma-separated)" value="Title,Title Page,Review"/>
-          <input id="pl_excludePrefixes" type="text" placeholder="Exclude prefixes (comma-separated)" value="Q ,R, Subheading "/>
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="label"><label for="pl_conductorInput">Conductor:</label></div>
-        <div class="controls">
-          <input id="pl_conductorInput" type="text"/>
-          <span class="sub" style="margin-left:auto"><span id="pl_countShown">0</span> shown · <span id="pl_countTotal">0</span> total</span>
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="label">Title:</div>
-        <div class="controls">
-          <span id="pl_itemTitle" class="sub" style="font-style:italic"></span>
-        </div>
-      </div>
-
-      <div class="field" style="align-items:start">
-        <div class="label">Checklist:</div>
-        <div class="controls" style="flex-direction:column; align-items:stretch">
-          <div id="pl_checklist" class="list checklist" style="max-height: 50vh; overflow:auto; border:1px dashed var(--border); padding:8px; border-radius:10px"></div>
-        </div>
-      </div>
-    </div>
-
-
+</select>
+</div>
+</div>
+<!-- Closing Prayer -->
+<div class="field" id="prayerEdit">
+<div class="label"><label for="prayerInput">Closing Prayer:</label></div>
+<div class="controls">
+<input id="prayerInput" type="text"/>
+<button class="btn-green" id="prayerSubmit" title="Save">✔</button>
+</div>
+</div>
+<div class="field hidden" id="prayerDisplay">
+<div class="label">Closing Prayer:</div>
+<div class="controls">
+<span id="prayerName"></span>
+<button class="btn-red" id="prayerEditBtn" title="Edit">✕</button>
+</div>
+</div>
+</div>
+<!-- Public Talk -->
+<div class="card" id="publicTalkCard">
+<h2>Public Talk</h2>
+<div class="field" id="ptSpeakerEdit">
+<div class="label"><label for="ptSpeakerInput">Speaker:</label></div>
+<div class="controls">
+<input id="ptSpeakerInput" type="text"/>
+<button class="btn-green" id="ptSpeakerSubmit" title="Save">✔</button>
+</div>
+</div>
+<div class="field hidden" id="ptSpeakerDisplay">
+<div class="label">Speaker:</div>
+<div class="controls">
+<span id="ptSpeakerName"></span>
+<button class="btn-red" id="ptSpeakerEditBtn" title="Edit">✕</button>
+</div>
+</div>
+<div class="field" id="ptCongEdit">
+<div class="label"><label for="ptCongInput">Congregation:</label></div>
+<div class="controls">
+<input id="ptCongInput" type="text"/>
+<button class="btn-green" id="ptCongSubmit" title="Save">✔</button>
+</div>
+</div>
+<div class="field hidden" id="ptCongDisplay">
+<div class="label">Congregation:</div>
+<div class="controls">
+<span id="ptCongName"></span>
+<button class="btn-red" id="ptCongEditBtn" title="Edit">✕</button>
+</div>
+</div>
+<div class="field" id="ptTitleEdit"><div class="label"><label for="ptTitleInput">Title:</label></div><div class="controls"><input id="ptTitleInput" placeholder="Select a theme…" readonly="" style="min-width:520px; max-width:840px;" type="text"/><button class="muted-btn" id="ptThemeOpen" title="Select Theme" type="button">Select</button></div></div><!-- Inline Theme Picker (hidden by default) --><div class="card" id="ptThemePicker" style="display:none; padding:12px; margin-top:8px;"><div class="field" style="grid-template-columns: 120px 1fr;"><div class="label">Search:</div><div class="controls"><input id="ptThemeSearch" placeholder="Select the title" type="text"/></div></div><div style="max-height:40vh; overflow:auto; border:1px solid var(--border); border-radius:10px;"><ul class="list" id="ptThemeList" style="padding:8px; margin:0;"></ul></div><div style="display:flex; gap:10px; margin-top:10px;"><button class="muted-btn" id="ptThemeClose" type="button">Close</button><span class="sub">Click a theme to select it.</span></div></div>
+<div class="field hidden" id="ptTitleDisplay">
+<div class="label">Title:</div>
+<div class="controls">
+<span id="ptTitleName"></span>
+<button class="btn-red" id="ptTitleEditBtn" title="Edit">✕</button>
+</div>
+</div>
+<div class="field">
+<div class="label"><label for="publicTalkInput">Media:</label></div>
+<div class="controls" style="flex-direction:column; align-items:stretch">
+<textarea id="publicTalkInput" placeholder="Paste media checklist items here"></textarea>
+<div id="pt_btn_row" style="display:flex; gap:10px; margin-top:10px">
+<button class="btn-green" id="btnMakePT">Make checklist</button>
+<button class="muted-btn" id="btnClearPT">Clear</button>
+</div>
+<div id="pt_checklist_container" style="margin-top:10px; border:1px dashed var(--border); padding:8px; border-radius:10px; max-height:50vh; overflow:auto">
+<ul class="list checklist" id="pt_checklist"></ul>
+</div>
+</div>
+</div>
+</div>
+<!-- Playlist (JW Library) -->
+<div class="card" id="playlistCard">
+<h2>Watchtower</h2>
+<div class="sub"><span id="pl_weekRange"></span></div>
+<div class="field">
+<div class="label"><label for="pl_fileInput">File:</label></div>
+<div class="controls">
+<input accept=".jwlplaylist,.jwlibrary" id="pl_fileInput" type="file"/>
+<button class="muted-btn" disabled="" id="pl_extractBtn">Extract</button>
+<span class="sub" id="pl_status"></span>
+</div>
+</div>
+<div class="field">
+<div class="label">Show:</div>
+<div class="controls">
+<label class="show-pill"><input id="pl_filterAll" name="pl_filter" type="radio" value="All"/><span>All</span></label>
+<label title="Exclude Title / Title Page / Subheading / Q / Review / R"><input checked="" id="pl_filterPreset" type="checkbox"/> Filtered</label>
+<label class="show-pill"><input id="pl_filterCustom" name="pl_filter" type="radio" value="Custom"/><span>Custom</span></label>
+<label class="show-pill"><input id="pl_filterPaste" name="pl_filter" type="radio" value="Paste"/><span>Paste</span></label>
+</div>
+</div>
+<div class="field hidden" id="pl_customFilters">
+<div class="label">Custom rules:</div>
+<div class="controls" style="flex-direction:column; align-items:stretch">
+<input id="pl_excludeExact" placeholder="Exclude exact labels (comma-separated)" type="text" value="Title,Title Page,Review"/>
+<input id="pl_excludePrefixes" placeholder="Exclude prefixes (comma-separated)" type="text" value="Q ,R, Subheading "/>
+</div>
+</div>
+<div class="field">
+<div class="label"><label for="pl_conductorInput">Conductor:</label></div>
+<div class="controls">
+<input id="pl_conductorInput" type="text"/>
+<span class="sub" style="margin-left:auto"><span id="pl_countShown">0</span> shown · <span id="pl_countTotal">0</span> total</span>
+</div>
+</div>
+<div class="field">
+<div class="label">Title:</div>
+<div class="controls">
+<span class="sub" id="pl_itemTitle" style="font-style:italic"></span>
+</div>
+</div>
+<div class="field" style="align-items:start">
+<div class="label">Checklist:</div>
+<div class="controls" style="flex-direction:column; align-items:stretch">
+<div class="list checklist checklist-container" id="pl_checklist" style="max-height: 50vh; overflow:auto; border:1px dashed var(--border); padding:8px; border-radius:10px"></div>
+</div>
+</div>
+</div>
 <!-- Checklist -->
-    <div id="checklistCard" class="card hidden">
-      <h2>Checklist</h2>
-      <ul id="checklist" class="list checklist"></ul>
-      <button id="btnBack" class="muted-btn">Back</button>
-    </div>
-
-  </div>
-
+<div class="card hidden" id="checklistCard">
+<h2>Checklist</h2>
+<ul class="list checklist" id="checklist"></ul>
+<button class="muted-btn" id="btnBack">Back</button>
+</div>
+</div>
 <script>
 // Date header (next Saturday, 10:30 am)
 function nextSaturdayDate(d=new Date()){
@@ -1064,11 +1309,9 @@ function _parseVTT(txt){
   });
 })();
 </script>
-
 <!-- Playlist extractor dependencies -->
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sql.js@1.9.0/dist/sql-wasm.js"></script>
-
 <script>
 // Compute current week range in Pacific Time (unified with app date style)
 (function(){
@@ -1262,8 +1505,6 @@ pl_file.addEventListener("change", async (e)=>{
 });
 pl_btn.addEventListener("click", async ()=>{ try { await pl_doExtract(); } catch(_){}});
 </script>
-
-
 <!-- Autosave text inputs & textareas (persist until Clear all) -->
 <script>
 (function(){
@@ -1313,8 +1554,6 @@ pl_btn.addEventListener("click", async ()=>{ try { await pl_doExtract(); } catch
   }
 })();
 </script>
-
-
 <script>
 // === Media -> Checklist wiring (inline in Public Talk card with temporary hide) ===
 (function(){
@@ -1381,8 +1620,6 @@ pl_btn.addEventListener("click", async ()=>{ try { await pl_doExtract(); } catch
     showInputs();
   });
 })();</script>
-
-
 <script>
 // === Public Talk Theme Picker (search + select, inline; auto-saves; hides Save) ===
 (function(){
@@ -1446,8 +1683,6 @@ pl_btn.addEventListener("click", async ()=>{ try { await pl_doExtract(); } catch
   });
 })();
 </script>
-
-
 <script>
 // Compute display date: Saturday of the current Mon–Sun week in Pacific Time.
 // Shows the same Saturday from Monday 00:00 PT through Sunday 23:59 PT.
@@ -1479,6 +1714,632 @@ pl_btn.addEventListener("click", async ()=>{ try { await pl_doExtract(); } catch
   }
 })();
 </script>
+<!-- === Song Search Enhancer: searchable + persistent + FULL-WIDTH (by ChatGPT) === -->
+<script id="song-search-enhancer">
+(() => {
+  const SONG_SELECT_IDS = ["song1Input","song2Input","song3Input"];
+  const DATALIST_ID = "songsMasterList";
 
+  function ensureDatalist() {
+    if (document.getElementById(DATALIST_ID)) return;
+    const firstSel = document.getElementById(SONG_SELECT_IDS[0]);
+    if (!firstSel) return;
+    const dl = document.createElement("datalist");
+    dl.id = DATALIST_ID;
+    [...firstSel.options].forEach(opt => {
+      if (!opt || !opt.value || opt.disabled) return;
+      const o = document.createElement("option");
+      o.value = (opt.textContent || "").trim();
+      o.setAttribute("data-key", opt.value);
+      dl.appendChild(o);
+    });
+    document.body.appendChild(dl);
+  }
+
+  function findKeyForTypedValue(typed) {
+    const dl = document.getElementById(DATALIST_ID);
+    if (!dl) return null;
+    const opts = [...dl.querySelectorAll("option")];
+    let hit = opts.find(o => o.value.trim() === typed.trim());
+    if (hit) return hit.getAttribute("data-key");
+    const q = typed.trim().toLowerCase();
+    const matches = opts.filter(o => o.value.toLowerCase().includes(q));
+    if (matches.length === 1) return matches[0].getAttribute("data-key");
+    return null;
+  }
+
+  function enhanceSelect(selectId) {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+
+    const wrap = document.createElement("div");
+    wrap.style.display = "grid";
+    wrap.style.gap = "0.25rem";
+
+    const input = document.createElement("input");
+    input.type = "search";
+    input.setAttribute("list", DATALIST_ID);
+    input.setAttribute("placeholder", "Search songs…");
+    input.setAttribute("aria-label", label.textContent + " (search)");
+    input.id = selectId + "_search";
+    input.style.padding = "0.5rem 0.6rem";
+    input.style.border = "1px solid #ccc";
+    input.style.borderRadius = "0.5rem";
+    input.style.fontSize = "1rem";
+    input.style.width = "100%";
+    input.style.boxSizing = "border-box";
+
+    // Hide original select but keep functional
+    sel.style.position = "absolute";
+    sel.style.left = "-9999px";
+    sel.style.width = "1px";
+    sel.style.height = "1px";
+    sel.setAttribute("tabindex", "-1");
+    sel.setAttribute("aria-hidden", "true");
+
+    sel.parentNode.insertBefore(wrap, sel);wrap.appendChild(input);
+
+    const storageKey = "persist_" + selectId;
+
+    function applySelectFromKey(key) {
+      if (!key) return false;
+      const old = sel.value;
+      sel.value = key;
+      if (sel.value != key) {
+        sel.value = old;
+        return false;
+      }
+      const opt = sel.selectedOptions?.[0];
+      input.value = opt ? (opt.textContent || "").trim() : "";
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+      return true;
+    }
+
+    // Restore saved selection
+    const saved = localStorage.getItem(storageKey);
+    if (saved) applySelectFromKey(saved);
+
+    // Sync storage when select changes
+    sel.addEventListener("change", () => {
+      const val = sel.value || "";
+      if (val) localStorage.setItem(storageKey, val);
+      else localStorage.removeItem(storageKey);
+    });
+
+    // Pick from search (on change or Enter)
+    function pickFromInput() {
+      const key = findKeyForTypedValue(input.value);
+      if (key) {
+        applySelectFromKey(key);
+      } else {
+        sel.value = "";
+        sel.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
+    input.addEventListener("change", pickFromInput);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        pickFromInput();
+        input.blur();
+        e.preventDefault();
+      }
+    });
+
+    // Keep in sync if programmatically changed
+    sel.addEventListener("input", () => {
+      const opt = sel.selectedOptions?.[0];
+      input.value = opt ? (opt.textContent || "").trim() : "";
+    });
+
+    // Clear helper
+    sel._clearPersisted = () => {
+      localStorage.removeItem(storageKey);
+      sel.value = "";
+      input.value = "";
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+    };
+  }
+
+  function wireClearAllForSongs() {
+    const btn = document.getElementById("btnClearSaved");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      ["song1Input","song2Input","song3Input"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && typeof el._clearPersisted === "function") {
+          el._clearPersisted();
+        } else {
+          localStorage.removeItem("persist_" + id);
+          if (el) { el.value = ""; el.dispatchEvent(new Event("change", { bubbles: true })); }
+        }
+      });
+    });
+  }
+
+  const init = () => {
+    ensureDatalist();
+    SONG_SELECT_IDS.forEach(enhanceSelect);
+    wireClearAllForSongs();
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+<!-- === /Song Search Enhancer === -->
+<script id="exportImportScript">
+(function(){
+  function collectData() {
+    const data = {};
+    document.querySelectorAll("input[type=text], input[type=search], textarea, select").forEach(el => {
+      if (!el.id) return;
+      data[el.id] = el.value;
+    });
+    document.querySelectorAll("input[type=checkbox]").forEach(el => {
+      if (!el.id) return;
+      data[el.id] = !!el.checked;
+    });
+    const radiosByName = {};
+    document.querySelectorAll("input[type=radio]").forEach(el => {
+      if (!el.name) return;
+      if (!radiosByName[el.name]) radiosByName[el.name] = null;
+      if (el.checked) radiosByName[el.name] = el.id || el.value;
+    });
+    Object.keys(radiosByName).forEach(name => {
+      data["radio::"+name] = radiosByName[name];
+    });
+    return data;
+  }
+
+  function applyData(data) {
+    Object.entries(data).forEach(([key,val]) => {
+      if (key.startsWith("radio::")) {
+        const name = key.slice(7);
+        const wanted = val;
+        if (wanted == null) return;
+        const group = document.querySelectorAll(`input[type=radio][name="${name}"]`);
+        group.forEach(r => {
+          const match = (r.id && r.id === wanted) || (r.value === wanted);
+          if (match) {
+            r.checked = true;
+            r.dispatchEvent(new Event("change", {bubbles:true}));
+          }
+        });
+        return;
+      }
+      const el = document.getElementById(key);
+      if (!el) return;
+      if (el.tagName === "INPUT" && el.type === "checkbox") {
+        el.checked = !!val;
+        el.dispatchEvent(new Event("change", {bubbles:true}));
+        return;
+      }
+      el.value = (val == null ? "" : val);
+      el.dispatchEvent(new Event("change", {bubbles:true}));
+      try {
+        localStorage.setItem("persist_" + key, el.value);
+      } catch(e) {}
+    });
+  }
+
+  function download(filename, text) {
+    const blob = new Blob([text], {type: "application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  }
+
+  const btnExport = document.getElementById("btnExport");
+  const btnImport = document.getElementById("btnImport");
+  const fileInput = document.getElementById("importFile");
+
+  if (btnExport) {
+    btnExport.addEventListener("click", () => {
+      const data = collectData();
+      const stamp = new Date().toISOString().replace(/[:.]/g,"-");
+      download(`saturday-${(function(){const s=new Date().toLocaleString('en-US',{timeZone:'America/Los_Angeles'});const p=s.split(',')[0].split('/');const m=p[0].padStart(2,'0');const d=p[1].padStart(2,'0');const y=p[2];return y+'-'+m+'-'+d;})()}.json`, JSON.stringify(data, null, 2));
+    });
+  }
+  if (btnImport && fileInput) {
+    btnImport.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => {
+      
+const file = e.target.files && e.target.files[0];
+      const fname = (file && file.name || '').toLowerCase();
+      if (!fname.startsWith('saturday-') || !fname.endsWith('.json')) {
+        
+        e.target.value = '';
+        return;
+      }
+      
+if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          applyData(data);
+          
+        } catch (err) {
+          alert("Invalid file format.");
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = "";
+    });
+  }
+})();
+</script>
+<!-- Watchtower Custom Editor Start -->
+<!-- Watchtower Custom Editor End -->
+<style id="pl-custom-editor-style">
+#pl_customEditor {
+  display: none;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 8px;
+  background: #fafafa;
+}
+#pl_customInput {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  box-sizing: border-box;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+#pl_makeChecklist {
+  margin-top: 0.5rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #f6f6f6;
+  cursor: pointer;
+}
+#pl_makeChecklist:hover { background:#e9e9e9; }
+</style>
+<script id="pl-custom-editor-script">
+(function(){
+  function ensureEditor(){
+    const card = document.querySelector("#playlistCard");
+    const checklist = document.querySelector("#pl_checklist");
+    if(!card||!checklist) return;
+    if(document.getElementById("pl_customEditor")) return;
+    const editor = document.createElement("div");
+    editor.id = "pl_customEditor";
+    editor.innerHTML = '<textarea id="pl_customInput"></textarea><div><button id="pl_makeChecklist" type="button">Make checklist</button></div>';
+    checklist.parentNode.insertBefore(editor, checklist);
+  }
+  function buildChecklistFromLines(lines){
+    const container = document.querySelector("#pl_checklist");
+    if(!container) return;
+    container.innerHTML='';
+    const ul = document.createElement('ul');
+    ul.style.listStyle='none'; ul.style.padding='0'; ul.style.margin='0';
+    lines.forEach((raw,i)=>{
+      const text=(raw||'').trim(); if(!text) return;
+      const li=document.createElement('li'); li.style.margin='4px 0';
+      const id='pl_item_'+(i+1);
+      li.innerHTML = '<label style="display:flex;align-items:center;gap:0.5rem;">'
+        + '<input type="checkbox" id="'+id+'"/>'
+        + '<span>'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>'
+        + '</label>';
+      ul.appendChild(li);
+    });
+    container.appendChild(ul);
+  }
+  function bind(){
+    const all = document.getElementById('pl_filterAll');
+    const filtered = document.getElementById('pl_filterFiltered');
+    const custom = document.getElementById('pl_filterCustom');
+    const paste = document.getElementById('pl_filterPaste');
+    const editor = document.getElementById('pl_customEditor');
+    const rules = document.querySelector('#pl_customRules') || document.querySelector('.pl_customRules');
+
+    const update = ()=>{
+      const onPaste = !!(paste && paste.checked);
+      const onCustom = !!(custom && custom.checked);
+      if(editor) editor.style.display = onPaste ? 'block' : 'none';
+      if(rules) rules.style.display = onCustom ? '' : 'none';
+      // All/Filtered hide both editor and rules
+      if(!onPaste && !onCustom){
+        if(editor) editor.style.display = 'none';
+        if(rules) rules.style.display = 'none';
+      }
+    };
+    [all, filtered, custom, paste].forEach(el => { if(el) el.addEventListener('change', update); });
+    const card = document.getElementById('playlistCard'); if(card) card.addEventListener('change', update);
+    update();
+
+    const btn = document.getElementById('pl_makeChecklist');
+    if(btn){
+      btn.addEventListener('click', ()=>{
+        const ta=document.getElementById('pl_customInput'); if(!ta) return;
+        const lines=ta.value.split(/\r?\n/);
+        buildChecklistFromLines(lines);
+        try{ localStorage.setItem('persist_pl_customInput', ta.value); }catch(e){}
+      });
+    }
+    const ta=document.getElementById('pl_customInput');
+    if(ta){
+      try{ const saved=localStorage.getItem('persist_pl_customInput'); if(saved) ta.value=saved; }catch(e){}
+    }
+  }
+  document.addEventListener('DOMContentLoaded', ()=>{ ensureEditor(); bind(); });
+})();
+</script>
+<style id="wt-editor-toggle-style">
+  /* Back button styled like top pills */
+  #pl_backToEditor {
+    display:none;
+    padding:0.55rem 1.1rem;
+    border-radius:9999px;
+    border:1px solid #cfd6de;
+    background:#eef2f7;
+    font-weight:600;
+    box-shadow:0 1px 1px rgba(0,0,0,.03);
+    cursor:pointer;
+    transition:background .15s,border-color .15s,transform .05s;
+    margin: 0.5rem 0;
+  }
+  #pl_backToEditor:hover{ background:#e7edf5; border-color:#c3ccd6; }
+  #pl_backToEditor:active{ transform:translateY(1px); }
+  #pl_customEditor { margin: 0.5rem 0; }
+  #pl_customInput {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+  }
+  #pl_makeChecklist.btn { margin-top: 8px; }
+</style>
+<script id="wt-editor-toggle-script">
+(function(){
+  function ensureEditorUI(){
+    const card = document.querySelector("#playlistCard");
+    const list = document.querySelector("#pl_checklist");
+    if (!card || !list) return;
+
+    // Insert editor (textarea + Make checklist) above checklist if missing
+    let editor = document.getElementById("pl_customEditor");
+    if (!editor) {
+      editor = document.createElement("div");
+      editor.id = "pl_customEditor";
+      editor.style.display = "none"; // only show when Paste is selected
+      editor.innerHTML = ''
+        + '<textarea id="pl_customInput" placeholder=""></textarea>'
+        + '<div><button id="pl_makeChecklist" type="button" class="btn">Make checklist</button></div>';
+      list.parentNode.insertBefore(editor, list);
+    } else {
+      // Ensure Make checklist exists
+      if (!editor.querySelector("#pl_makeChecklist")) {
+        const b = document.createElement("button");
+        b.id = "pl_makeChecklist";
+        b.type = "button";
+        b.className = "btn";
+        b.textContent = "Make checklist";
+        editor.appendChild(b);
+      }
+    }
+
+    // Insert Back button right after editor
+    let back = document.getElementById("pl_backToEditor");
+    if (!back) {
+      back = document.createElement("button");
+      back.id = "pl_backToEditor";
+      back.textContent = "Back";
+      editor.parentNode.insertBefore(back, editor.nextSibling);
+    }
+  }
+
+  function buildChecklistFromLines(lines){
+    const container = document.querySelector("#pl_checklist");
+    if (!container) return;
+    container.innerHTML = "";
+    const ul = document.createElement("ul");
+    ul.className = "list checklist";
+    ul.style.listStyle='none'; ul.style.padding='0'; ul.style.margin='0';
+    lines.forEach((raw, i) => {
+      const txt = (raw || "").trim();
+      if (!txt) return;
+      const id = "pl_item_" + (i+1);
+      const li = document.createElement("li");
+      li.innerHTML = '<label style="display:flex;align-items:center;gap:0.5rem;">'
+        + '<input type="checkbox" id="'+id+'">'
+        + '<span>'+txt.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>'
+        + '</label>';
+      ul.appendChild(li);
+    });
+    container.appendChild(ul);
+  }
+
+  function bind(){
+    const pasteRadio = document.getElementById("pl_filterPaste");
+    const customRadio = document.getElementById("pl_filterCustom");
+    const editor = document.getElementById("pl_customEditor");
+    const back = document.getElementById("pl_backToEditor");
+    const makeBtn = document.getElementById("pl_makeChecklist");
+    const rules = document.getElementById("pl_customFilters");
+
+    const updateMode = () => {
+      const onPaste = !!(pasteRadio && pasteRadio.checked);
+      const onCustom = !!(customRadio && customRadio.checked);
+      if (editor) editor.style.display = onPaste ? "block" : "none";
+      if (back) back.style.display = "none"; // reset on mode change
+      if (rules) rules.classList.toggle("hidden", !onCustom);
+    };
+
+    if (pasteRadio) pasteRadio.addEventListener("change", updateMode);
+    if (customRadio) customRadio.addEventListener("change", updateMode);
+
+    if (makeBtn) {
+      makeBtn.addEventListener("click", () => {
+        const ta = document.getElementById("pl_customInput");
+        const lines = (ta && ta.value ? ta.value : "").split(/\r?\n/);
+        buildChecklistFromLines(lines);
+        try { localStorage.setItem("persist_pl_customInput", ta ? ta.value : ""); } catch(e){}
+        if (editor) editor.style.display = "none";
+        if (back) back.style.display = "inline-block";
+      });
+    }
+
+    if (back) {
+      back.addEventListener("click", () => {
+        if (editor) editor.style.display = "block";
+        back.style.display = "none";
+      });
+    }
+
+    // Restore pasted text if any
+    const ta = document.getElementById("pl_customInput");
+    try {
+      const saved = localStorage.getItem("persist_pl_customInput");
+      if (ta && saved) ta.value = saved;
+    } catch(e){}
+
+    updateMode();
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    ensureEditorUI();
+    bind();
+  });
+})();
+</script>
+<style id="pt-media-backtoggle-style">
+  /* Back button to match pill buttons */
+  #pt_mediaBackBtn {
+    display:none;
+    padding:0.55rem 1.1rem;
+    border-radius:9999px;
+    border:1px solid #cfd6de;
+    background:#eef2f7;
+    font-weight:600;
+    box-shadow:0 1px 1px rgba(0,0,0,.03);
+    cursor:pointer;
+    transition:background .15s,border-color .15s,transform .05s;
+    margin: 0.5rem 0;
+  }
+  #pt_mediaBackBtn:hover{ background:#e7edf5; border-color:#c3ccd6; }
+  #pt_mediaBackBtn:active{ transform:translateY(1px); }
+</style>
+<script id="pt-media-backtoggle-script">
+(function(){
+  function ensureMediaEditorUI(){
+    const card = document.querySelector("#publicTalkCard");
+    if (!card) return;
+    // find Media section's checklist container (uses .checklist-container within card)
+    const container = card.querySelector(".checklist-container");
+    if (!container) return;
+
+    // Find or create textarea for paste input
+    let ta = card.querySelector("textarea");
+    if (!ta) {
+      ta = document.createElement("textarea");
+      ta.style.width = "50%";
+      ta.style.maxWidth = "50%";
+      ta.style.minHeight = "120px";
+      ta.style.boxSizing = "border-box";
+      ta.style.padding = "10px 12px";
+      ta.style.border = "1px solid #e5e7eb";
+      ta.style.borderRadius = "10px";
+      // insert before container
+      container.parentNode.insertBefore(ta, container);
+    }
+
+    // Find or create Make checklist button for Public Talk Media
+    let makeBtn = card.querySelector("#pt_mediaMakeBtn");
+    if (!makeBtn) {
+      makeBtn = document.createElement("button");
+      makeBtn.id = "pt_mediaMakeBtn";
+      makeBtn.className = "btn";
+      makeBtn.type = "button";
+      makeBtn.textContent = "Make checklist";
+      ta.insertAdjacentElement("afterend", makeBtn);
+    }
+
+    // Ensure Back button after textarea+make button
+    let backBtn = card.querySelector("#pt_mediaBackBtn");
+    if (!backBtn) {
+      backBtn = document.createElement("button");
+      backBtn.id = "pt_mediaBackBtn";
+      backBtn.textContent = "Back";
+      makeBtn.insertAdjacentElement("afterend", backBtn);
+    }
+  }
+
+  function buildListFromText(raw){
+    const card = document.querySelector("#publicTalkCard");
+    const container = card && card.querySelector(".checklist-container");
+    if (!container) return;
+    container.innerHTML = "";
+    const ul = document.createElement("ul");
+    ul.className = "list checklist";
+    ul.style.listStyle = "none";
+    ul.style.padding = "0";
+    ul.style.margin = "0";
+    (raw || "").split(/\r?\n/).forEach((line, idx) => {
+      const text = (line||"").trim();
+      if (!text) return;
+      const li = document.createElement("li");
+      li.style.margin = "6px 0";
+      li.innerHTML = '<label style="display:flex;align-items:center;gap:0.5rem;">'
+        + '<input type="checkbox"/>'
+        + '<span>' + text.replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span>'
+        + '</label>';
+      ul.appendChild(li);
+    });
+    container.appendChild(ul);
+  }
+
+  function bindPTMedia(){
+    const card = document.querySelector("#publicTalkCard");
+    if (!card) return;
+    const ta = card.querySelector("textarea");
+    const makeBtn = card.querySelector("#pt_mediaMakeBtn");
+    const backBtn = card.querySelector("#pt_mediaBackBtn");
+    if (!ta || !makeBtn || !backBtn) return;
+
+    makeBtn.addEventListener("click", () => {
+      buildListFromText(ta.value);
+      try { localStorage.setItem("persist_pt_media_text", ta.value); } catch(e){}
+      // hide textarea + make button; show Back
+      ta.style.display = "none";
+      makeBtn.style.display = "none";
+      backBtn.style.display = "inline-block";
+    });
+
+    backBtn.addEventListener("click", () => {
+      // show textarea + make button; hide Back
+      ta.style.display = "block";
+      makeBtn.style.display = "inline-block";
+      backBtn.style.display = "none";
+    });
+
+    // Restore text if exists
+    try {
+      const saved = localStorage.getItem("persist_pt_media_text");
+      if (saved) ta.value = saved;
+    } catch(e){}
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    ensureMediaEditorUI();
+    bindPTMedia();
+  });
+})();
+</script>
 </body>
 </html>
