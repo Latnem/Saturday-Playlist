@@ -369,7 +369,43 @@
     transition:transform .08s ease, filter .15s ease, box-shadow .15s ease;
   }
 .btn:hover{ filter:brightness(.98); box-shadow:0 2px 6px rgba(0,0,0,.06); }
-.btn:active{ transform:translateY(1px); }</style></head>
+.btn:active{ transform:translateY(1px); }</style>
+<style id="brother-typeahead-style">
+  /* Compact type-to-search dropdown similar to Tuesday song selector */
+  .typeahead-wrap { position: relative; }
+  .typeahead-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+  .typeahead-list {
+    position: absolute;
+    z-index: 50;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    max-height: 220px;
+    overflow: auto;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.08);
+    display: none;
+  }
+  .typeahead-item {
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .typeahead-item:hover,
+  .typeahead-item.active {
+    background: #f3f4f6;
+  }
+</style>
+
+</head>
 <body>
 <div id="clearAllTopAligned">
 <div class="top-row" id="exportImportBar"><button class="btn" id="btnImport">Load</button><button class="btn" id="btnExport">Save</button><input accept="application/json" id="importFile" style="display:none;" type="file"/><button class="btn" id="btnClearSaved" title="Clear all saved role inputs">Clear all</button></div>
@@ -2387,6 +2423,114 @@ if (!file) return;
 })();
 </script>
 
+<datalist id="BrothersList">
+  <option value="Albert Semerdjian"></option>
+  <option value="Bobby Sebastian"></option>
+  <option value="David Vargas"></option>
+  <option value="Guthrie Baerje"></option>
+  <option value="JC Gutierrez"></option>
+  <option value="Jesse Dunn"></option>
+  <option value="Joey Ruiz"></option>
+  <option value="Jonathan Buckridge"></option>
+  <option value="Seth Froitzheim"></option>
+  <option value="Timothy Wiggins"></option>
+</datalist>
+
+
+
+
+
+<script id="brother-typeahead-script">
+(function(){
+  const BROTHERS = [
+    "Albert Semerdjian",
+    "Bobby Sebastian",
+    "David Vargas",
+    "Guthrie Baerje",
+    "JC Gutierrez",
+    "Jesse Dunn",
+    "Joey Ruiz",
+    "Jonathan Buckridge",
+    "Seth Froitzheim",
+    "Timothy Wiggins"
+  ];
+
+  function enhanceInput(input){
+    if (!input) return;
+    const wrap = document.createElement("div");
+    wrap.className = "typeahead-wrap";
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+    input.classList.add("typeahead-input");
+    input.setAttribute("autocomplete", "off");
+
+    const list = document.createElement("div");
+    list.className = "typeahead-list";
+    wrap.appendChild(list);
+
+    let currentIndex = -1;
+    function render(items){
+      list.innerHTML = "";
+      items.forEach((name, idx) => {
+        const div = document.createElement("div");
+        div.className = "typeahead-item";
+        div.textContent = name;
+        div.tabIndex = 0;
+        div.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          input.value = name;
+          hide();
+        });
+        list.appendChild(div);
+      });
+      list.style.display = items.length ? "block" : "none";
+      currentIndex = -1;
+    }
+    function hide(){ list.style.display = "none"; }
+    function showFiltered(){
+      const q = (input.value || "").trim().toLowerCase();
+      const items = q ? BROTHERS.filter(n => n.toLowerCase().includes(q)) : BROTHERS.slice();
+      render(items);
+    }
+
+    input.addEventListener("input", showFiltered);
+    input.addEventListener("focus", showFiltered);
+
+    input.addEventListener("keydown", (e) => {
+      const items = Array.from(list.querySelectorAll(".typeahead-item"));
+      if (!items.length) return;
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        currentIndex = (currentIndex + 1) % items.length;
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        currentIndex = (currentIndex - 1 + items.length) % items.length;
+      } else if (e.key === "Enter") {
+        if (currentIndex >= 0 && items[currentIndex]) {
+          e.preventDefault();
+          input.value = items[currentIndex].textContent;
+          hide();
+        }
+      } else if (e.key === "Escape") {
+        hide();
+        return;
+      } else {
+        return;
+      }
+      items.forEach(el => el.classList.remove("active"));
+      if (currentIndex >= 0) items[currentIndex].classList.add("active");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!wrap.contains(e.target)) hide();
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    ["openingInput", "chairInput", "prayerInput"].forEach(id => enhanceInput(document.getElementById(id)));
+  });
+})();
+</script>
 </body>
 </html>
 
