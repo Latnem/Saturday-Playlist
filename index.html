@@ -1,0 +1,2418 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Chatsworth Sign Language</title>
+<style>
+  :root{
+    --bg:#f7f7f8; --card:#fff; --ink:#111827; --muted:#4b5563; --accent:#2563eb;
+    --border:#e5e7eb; --danger:#ef4444; --ok:#16a34a; --focus:#93c5fd;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial; color:var(--ink); background:var(--bg);}
+  .wrap{max-width:960px; margin:32px auto; padding:0 16px;}
+
+  .card{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; box-shadow:0 1px 2px rgba(0,0,0,.03); margin-bottom:16px;}
+  h1{font-size:1.9rem; margin:0 0 4px; text-align:center}
+  .date-line{font-weight:600; margin:0 0 4px; text-align:center}
+  h2{font-size:1.25rem; margin:0 0 12px}
+  .sub{color:var(--muted); margin:0 0 14px}
+
+  /* Fields */
+  .field{display:grid; grid-template-columns: 180px 1fr; gap:12px; align-items:center; margin-bottom:12px}
+  .label{text-align:right; font-weight:700}
+  .controls{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  input[type="text"], select, textarea{border:1px solid var(--border); border-radius:10px; padding:10px 12px; min-width:260px}
+  input[type="text"], select{max-width:420px}
+  select{width:420px}
+  textarea{width:100%; min-height:140px; resize:vertical}
+  input:focus, select:focus, textarea:focus{outline:3px solid var(--focus); outline-offset:0}
+  button{cursor:pointer; border:none; border-radius:10px; font-weight:600; padding:10px 14px}
+  .btn-green{background:var(--ok); color:#fff}
+  .btn-red{background:var(--danger); color:#fff}
+  .muted-btn{background:#e5e7eb; color:#111827}
+
+  /* Checklist */
+  .list{list-style:none; padding:0; margin:0}
+  .checklist li{display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px dashed var(--border)}
+  .checklist li:first-child{border-top:none}
+  .hidden{display:none !important}
+
+  /* Responsive */
+  @media (max-width:720px){
+    .field{grid-template-columns:1fr; gap:6px}
+    .label{text-align:left}
+    select{width:100%}
+    input[type="text"]{width:100%; max-width:100%}
+  }
+
+  /* Hide only the ✔/✕ role buttons, not other green/red buttons */
+  .field .btn-green[title="Save"],
+  .field .btn-red[title="Edit"] { display: none !important; }
+
+  /* Blue override for Extract and Load buttons */
+  #btnExtract, #btnUseManual {
+    background: #2563eb !important;
+    color: #fff !important;
+  }
+
+
+#dateLine {
+  font-size: 1.25rem !important;
+  margin-bottom: 16px !important;
+}
+
+
+#pl_extractBtn {
+  background: #2563eb !important;
+  color: #fff !important;
+}
+
+
+/* Tighten Watchtower checklist items to align close to the left edge */
+#pl_checklist .field { 
+  grid-template-columns: 0 1fr !important;
+}
+#pl_checklist .field .label {
+  display: none !important;
+}
+
+
+/* Checklist: align checkbox + label inline neatly */
+.checklist .field {
+  display: flex !important;
+  align-items: center !important;
+  padding-left: 4px !important;
+}
+.checklist .field .label {
+  display: none !important;
+}
+.checklist .field .controls {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px;
+}
+
+
+/* Keep Theme field always in edit mode */
+#ptTitleDisplay { display: none !important; }
+#ptTitleEdit { display: grid !important; }
+
+</style>
+<style id="half-checklists-style">
+  /* Force both Watchtower and Public Talk checklist boxes to same fixed width */
+  #playlistCard #pl_checklist,
+  #publicTalkInput {
+    width: 460px !important;
+    box-sizing: border-box;
+    margin: 0;
+    display: block;
+    align-self: flex-start;
+  }
+  #playlistCard .field[style*="align-items:start"] .controls {
+    align-items: flex-start !important;
+  }
+</style>
+<style id="first-card-spacing">
+  /* Pull the first card even closer to the buttons with -20px margin */
+  #exportImportBar {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .card:first-of-type {
+    margin-top: -20px !important;  /* ultra tight spacing */
+  }
+</style>
+<style id="show-pills-style">
+/* Pill styling for Watchtower 'Show:' options */
+#playlistCard .sub label.show-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:0.35rem;
+  padding:0.25rem 0.6rem;
+  margin-right:0.35rem;
+  border:1px solid #ccc;
+  border-radius:999px;
+  background:#f6f6f6;
+  cursor:pointer;
+  user-select:none;
+}
+#playlistCard .sub label.show-pill:hover{ background:#e9e9e9; }
+#playlistCard .sub label.show-pill input[type="radio"]{
+  appearance:none;
+  -webkit-appearance:none;
+  width:0.9em; height:0.9em;
+  border:1px solid #777;
+  border-radius:50%;
+  position:relative;
+  margin:0;
+}
+#playlistCard .sub label.show-pill input[type="radio"]:checked::after{
+  content:"";
+  position:absolute;
+  top:2px; left:2px;
+  width:0.55em; height:0.55em;
+  border-radius:50%;
+  background:#555;
+}
+</style>
+<style id="publictalk-checklist-style">
+  #publicTalkCard textarea,
+  #publicTalkCard .checklist-container {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+  }
+</style>
+<style id="watchtower-checklist-match-style">
+  /* Match Watchtower checklist input to Public Talk: half width, same look */
+  #playlistCard #pl_customEditor textarea#pl_customInput {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-sizing: border-box;
+    min-height: 120px;
+  }
+  #playlistCard #pl_customEditor .btn#pl_makeChecklist {
+    margin-top: 8px;
+  }
+</style>
+<style id="watchtower-checklist-appearance-sync">
+  /* Make Watchtower checklist (input + generated list) match Public Talk */
+  /* Input already matched earlier; ensure button spacing */
+  #playlistCard #pl_customEditor textarea#pl_customInput {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-sizing: border-box;
+    min-height: 120px;
+  }
+  #playlistCard #pl_customEditor #pl_makeChecklist.btn { margin-top: 8px; }
+
+  /* Generated checklist container + list width to half, left-aligned */
+  #playlistCard #pl_checklist,
+  #playlistCard #pl_checklist > ul {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+  }
+
+  /* Match item spacing/label alignment like Public Talk */
+  #playlistCard #pl_checklist li {
+    margin: 6px 0;
+  }
+  #playlistCard #pl_checklist label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+</style>
+<style id="unified-checklist-style">
+  /* Unify checklist appearance between Public Talk and Watchtower */
+
+  /* Input fields */
+  #publicTalkCard textarea,
+  #playlistCard #pl_customEditor textarea#pl_customInput {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-sizing: border-box;
+    min-height: 120px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+  }
+
+  /* Generated checklist containers */
+  #publicTalkCard .checklist-container,
+  #playlistCard #pl_checklist,
+  #playlistCard #pl_checklist > ul {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+  }
+
+  /* Checklist items */
+  #publicTalkCard .checklist-container li,
+  #playlistCard #pl_checklist li {
+    margin: 6px 0;
+  }
+
+  /* Label alignment */
+  #publicTalkCard .checklist-container label,
+  #playlistCard #pl_checklist label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Checkbox size */
+  #publicTalkCard .checklist-container input[type="checkbox"],
+  #playlistCard #pl_checklist input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+</style>
+<style id="publictalk-media-clone-style">
+  /* Clone Public Talk → Media checklist look onto Watchtower checklist */
+  /* Container: half width, left aligned, consistent font */
+  #publicTalkCard .checklist-container,
+  #playlistCard .checklist-container {
+    max-width: 50%;
+    width: 50%;
+    display: block;
+    text-align: left;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+  }
+
+  /* Input textarea visual (for paste/custom editor) */
+  #publicTalkCard textarea,
+  #playlistCard #pl_customEditor textarea#pl_customInput {
+    max-width: 50%;
+    width: 50%;
+    display: block;
+    text-align: left;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-sizing: border-box;
+    min-height: 120px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+  }
+  #playlistCard #pl_customEditor #pl_makeChecklist.btn { margin-top: 8px; }
+
+  /* UL list style parity */
+  #publicTalkCard .checklist-container > ul.list.checklist,
+  #playlistCard .checklist-container > ul.list.checklist,
+  #playlistCard #pl_checklist > ul.list.checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* LI spacing and label alignment */
+  #publicTalkCard .checklist-container li,
+  #playlistCard .checklist-container li,
+  #playlistCard #pl_checklist li {
+    margin: 6px 0;
+  }
+  #publicTalkCard .checklist-container label,
+  #playlistCard .checklist-container label,
+  #playlistCard #pl_checklist label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    line-height: 1.35;
+  }
+
+  /* Checkbox sizing to match */
+  #publicTalkCard .checklist-container input[type="checkbox"],
+  #playlistCard .checklist-container input[type="checkbox"],
+  #playlistCard #pl_checklist input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+</style>
+<style id="publictalk-media-halfwidth-style">
+  /* Restrict Public Talk Media converted checklist to half width */
+  #publicTalkCard .checklist-container,
+  #publicTalkCard .checklist-container ul {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+  }
+</style>
+<style id="media-watchtower-halfwidth-style">
+  /* Restrict both Public Talk Media and Watchtower converted checklists to half width */
+  #publicTalkCard .checklist-container,
+  #publicTalkCard .checklist-container ul,
+  #playlistCard .checklist-container,
+  #playlistCard .checklist-container ul,
+  #playlistCard #pl_checklist,
+  #playlistCard #pl_checklist ul {
+    max-width: 50% !important;
+    width: 50% !important;
+    display: block;
+    text-align: left;
+  }
+</style>
+<style id="sat-topbar-clone">.top-row{
+    display:flex; justify-content:flex-end; align-items:center; gap:10px;
+    margin: 6px auto -18px auto; max-width:900px; padding: 0 16px;
+  }
+.btn{
+    cursor:pointer; border:1px solid var(--border);
+    border-radius:9999px; font-weight:600; padding:10px 16px;
+    background:#eef2f7; color:#111827;
+    box-shadow:0 1px 1px rgba(0,0,0,.03);
+    transition:transform .08s ease, filter .15s ease, box-shadow .15s ease;
+  }
+.btn:hover{ filter:brightness(.98); box-shadow:0 2px 6px rgba(0,0,0,.06); }
+.btn:active{ transform:translateY(1px); }</style></head>
+<body>
+<div id="clearAllTopAligned">
+<div class="top-row" id="exportImportBar"><button class="btn" id="btnImport">Load</button><button class="btn" id="btnExport">Save</button><input accept="application/json" id="importFile" style="display:none;" type="file"/><button class="btn" id="btnClearSaved" title="Clear all saved role inputs">Clear all</button></div>
+</div>
+<div class="wrap">
+<!-- Header -->
+<div class="card">
+<div style="height:24px; background:#723690; border-radius:12px 12px 0 0; margin:-20px -20px 16px -20px"></div>
+<h1>Chatsworth Sign Language<br/><span id="meetingDate" style="font-size:1.35rem; font-weight:500; display:inline-block; margin-bottom:10px;"></span></h1>
+<div class="date-line" id="dateLine" style="display:none"></div>
+<!-- Opening Prayer -->
+<div class="field" id="openingEdit">
+<div class="label"><label for="openingInput">Opening Prayer:</label></div>
+<div class="controls">
+<input id="openingInput" type="text"/>
+<button class="btn-green" id="openingSubmit" title="Save">✔</button>
+</div>
+</div>
+<div class="field hidden" id="openingDisplay">
+<div class="label">Opening Prayer:</div>
+<div class="controls">
+<span id="openingName"></span>
+<button class="btn-red" id="openingEditBtn" title="Edit">✕</button>
+</div>
+</div>
+<!-- Chairman -->
+<div class="field" id="chairEdit">
+<div class="label"><label for="chairInput">Chairman:</label></div>
+<div class="controls">
+<input id="chairInput" type="text"/>
+<button class="btn-green" id="chairSubmit" title="Save">✔</button>
+</div>
+</div>
+<div class="field hidden" id="chairDisplay">
+<div class="label">Chairman:</div>
+<div class="controls">
+<span id="chairName"></span>
+<button class="btn-red" id="chairEditBtn" title="Edit">✕</button>
+</div>
+</div>
+<!-- Songs: always-visible dropdowns -->
+<div class="field">
+<div class="label"><label for="song1Input">Song 1:</label></div>
+<div class="controls">
+<select id="song1Input">
+<option value="">Select a song…</option>
+<option value="1">1 — Jehovah’s Attributes</option>
+<option value="2">2 — Jehovah Is Your Name</option>
+<option value="3">3 — Our Strength, Our Hope, Our Confidence</option>
+<option value="4">4 — “Jehovah Is My Shepherd”</option>
+<option value="5">5 — God’s Wondrous Works</option>
+<option value="6">6 — The Heavens Declare God’s Glory</option>
+<option value="7">7 — Jehovah, Our Strength</option>
+<option value="8">8 — Jehovah Is Our Refuge</option>
+<option value="9">9 — Jehovah Is Our King!</option>
+<option value="10">10 — Praise Jehovah Our God!</option>
+<option value="11">11 — Creation Praises God</option>
+<option value="12">12 — Great God, Jehovah</option>
+<option value="13">13 — Christ, Our Model</option>
+<option value="14">14 — Praising Earth’s New King</option>
+<option value="15">15 — Praise Jehovah’s Firstborn!</option>
+<option value="16">16 — Praise Jah for His Son, the Anointed</option>
+<option value="17">17 — “I Want To”</option>
+<option value="18">18 — Grateful for the Ransom</option>
+<option value="19">19 — The Lord’s Evening Meal</option>
+<option value="20">20 — You Gave Your Precious Son</option>
+<option value="21">21 — Keep On Seeking First the Kingdom</option>
+<option value="22">22 — The Kingdom Is in Place—Let It Come!</option>
+<option value="23">23 — Jehovah Begins His Rule</option>
+<option value="24">24 — Come to Jehovah’s Mountain</option>
+<option value="25">25 — A Special Possession</option>
+<option value="26">26 — You Did It for Me</option>
+<option value="27">27 — The Revealing of God’s Sons</option>
+<option value="28">28 — Gaining Jehovah’s Friendship</option>
+<option value="29">29 — Living Up to Our Name</option>
+<option value="30">30 — My Father, My God and Friend</option>
+<option value="31">31 — Oh, Walk With God!</option>
+<option value="32">32 — Take Sides With Jehovah!</option>
+<option value="33">33 — Throw Your Burden on Jehovah</option>
+<option value="34">34 — Walking in Integrity</option>
+<option value="35">35 — “Make Sure of the More Important Things”</option>
+<option value="36">36 — We Guard Our Hearts</option>
+<option value="37">37 — Serving Jehovah Whole-Souled</option>
+<option value="38">38 — He Will Make You Strong</option>
+<option value="39">39 — Make a Good Name With God</option>
+<option value="40">40 — To Whom Do We Belong?</option>
+<option value="41">41 — Please Hear My Prayer</option>
+<option value="42">42 — The Prayer of God’s Servant</option>
+<option value="43">43 — A Prayer of Thanks</option>
+<option value="44">44 — A Prayer of the Lowly One</option>
+<option value="45">45 — The Meditation of My Heart</option>
+<option value="46">46 — We Thank You, Jehovah</option>
+<option value="47">47 — Pray to Jehovah Each Day</option>
+<option value="48">48 — Daily Walking With Jehovah</option>
+<option value="49">49 — Making Jehovah’s Heart Glad</option>
+<option value="50">50 — My Prayer of Dedication</option>
+<option value="51">51 — To God We Are Dedicated!</option>
+<option value="52">52 — Christian Dedication</option>
+<option value="53">53 — Preparing to Preach</option>
+<option value="54">54 — “This Is the Way”</option>
+<option value="55">55 — Fear Them Not!</option>
+<option value="56">56 — Make the Truth Your Own</option>
+<option value="57">57 — Preaching to All Sorts of People</option>
+<option value="58">58 — Searching for Friends of Peace</option>
+<option value="59">59 — Praise Jah With Me</option>
+<option value="60">60 — It Means Their Life</option>
+<option value="61">61 — Forward, You Witnesses!</option>
+<option value="62">62 — The New Song</option>
+<option value="63">63 — We’re Jehovah’s Witnesses!</option>
+<option value="64">64 — Sharing Joyfully in the Harvest</option>
+<option value="65">65 — Move Ahead!</option>
+<option value="66">66 — Declare the Good News</option>
+<option value="67">67 — “Preach the Word”</option>
+<option value="68">68 — Sowing Kingdom Seed</option>
+<option value="69">69 — Go Forward in Preaching the Kingdom!</option>
+<option value="70">70 — Search Out Deserving Ones</option>
+<option value="71">71 — We Are Jehovah’s Army!</option>
+<option value="72">72 — Making Known the Kingdom Truth</option>
+<option value="73">73 — Grant Us Boldness</option>
+<option value="74">74 — Join in the Kingdom Song!</option>
+<option value="75">75 — “Here I Am! Send Me!”</option>
+<option value="76">76 — How Does It Make You Feel?</option>
+<option value="77">77 — Light in a Darkened World</option>
+<option value="78">78 — “Teaching the Word of God”</option>
+<option value="79">79 — Teach Them to Stand Firm</option>
+<option value="80">80 — “Taste and See That Jehovah Is Good”</option>
+<option value="81">81 — The Life of a Pioneer</option>
+<option value="82">82 — “Let Your Light Shine”</option>
+<option value="83">83 — “From House to House”</option>
+<option value="84">84 — Reaching Out</option>
+<option value="85">85 — Welcome One Another</option>
+<option value="86">86 — We Must Be Taught</option>
+<option value="87">87 — Come! Be Refreshed</option>
+<option value="88">88 — Make Me Know Your Ways</option>
+<option value="89">89 — Listen, Obey, and Be Blessed</option>
+<option value="90">90 — Encourage One Another</option>
+<option value="91">91 — Our Labor of Love</option>
+<option value="92">92 — A Place Bearing Your Name</option>
+<option value="93">93 — Bless Our Meeting Together</option>
+<option value="94">94 — Grateful for God’s Word</option>
+<option value="95">95 — The Light Gets Brighter</option>
+<option value="96">96 — God’s Own Book—A Treasure</option>
+<option value="97">97 — Life Depends on God’s Word</option>
+<option value="98">98 — The Scriptures—Inspired of God</option>
+<option value="99">99 — Myriads of Brothers</option>
+<option value="100">100 — Receive Them With Hospitality</option>
+<option value="101">101 — Working Together in Unity</option>
+<option value="102">102 — “Assist Those Who Are Weak”</option>
+<option value="103">103 — Shepherds—Gifts in Men</option>
+<option value="104">104 — God’s Gift of Holy Spirit</option>
+<option value="105">105 — “God Is Love”</option>
+<option value="106">106 — Cultivating the Quality of Love</option>
+<option value="107">107 — The Divine Pattern of Love</option>
+<option value="108">108 — God’s Loyal Love</option>
+<option value="109">109 — Love Intensely From the Heart</option>
+<option value="110">110 — “The Joy of Jehovah”</option>
+<option value="111">111 — Our Reasons for Joy</option>
+<option value="112">112 — Jehovah, God of Peace</option>
+<option value="113">113 — Our Possession of Peace</option>
+<option value="114">114 — “Exercise Patience”</option>
+<option value="115">115 — Gratitude for Divine Patience</option>
+<option value="116">116 — The Power of Kindness</option>
+<option value="117">117 — The Quality of Goodness</option>
+<option value="118">118 — “Give Us More Faith”</option>
+<option value="119">119 — We Must Have Faith</option>
+<option value="120">120 — Imitate Christ’s Mildness</option>
+<option value="121">121 — We Need Self-Control</option>
+<option value="122">122 — Be Steadfast, Immovable!</option>
+<option value="123">123 — Loyally Submitting to Theocratic Order</option>
+<option value="124">124 — Ever Loyal</option>
+<option value="125">125 — “Happy Are the Merciful!”</option>
+<option value="126">126 — Stay Awake, Stand Firm, Grow Mighty</option>
+<option value="127">127 — The Sort of Person I Should Be</option>
+<option value="128">128 — Enduring to the End</option>
+<option value="129">129 — We Will Keep Enduring</option>
+<option value="130">130 — Be Forgiving</option>
+<option value="131">131 — “What God Has Yoked Together”</option>
+<option value="132">132 — Now We Are One</option>
+<option value="133">133 — Worship Jehovah During Youth</option>
+<option value="134">134 — Children Are a Trust From God</option>
+<option value="135">135 — Jehovah’s Warm Appeal: “Be Wise, My Son”</option>
+<option value="136">136 — “A Perfect Wage” From Jehovah</option>
+<option value="137">137 — Faithful Women, Christian Sisters</option>
+<option value="138">138 — Beauty in Gray-Headedness</option>
+<option value="139">139 — See Yourself When All Is New</option>
+<option value="140">140 — Life Without End—At Last!</option>
+<option value="141">141 — The Miracle of Life</option>
+<option value="142">142 — Holding Fast to Our Hope</option>
+<option value="143">143 — Keep Working, Watching, and Waiting</option>
+<option value="144">144 — Keep Your Eyes on the Prize!</option>
+<option value="145">145 — God’s Promise of Paradise</option>
+<option value="146">146 — “Making All Things New”</option>
+<option value="147">147 — Life Everlasting Is Promised</option>
+<option value="148">148 — Jehovah Provides Escape</option>
+<option value="149">149 — A Victory Song</option>
+<option value="150">150 — Seek God for Your Deliverance</option>
+<option value="151">151 — He Will Call</option>
+<option value="152">152 — A Place That Will Bring You Praise</option>
+<option value="153">153 — Give Me Courage</option>
+<option value="154">154 — Unfailing Love</option>
+<option value="155">155 — Our Joy Eternally</option>
+<option value="156">156 — With Eyes of Faith</option>
+<option value="157">157 — Peace at Last!</option>
+<option value="158">158 — “It Will Not Be Late!”</option>
+<option value="159">159 — Give Jehovah Glory</option>
+<option value="160">160 — “Good News”!</option>
+<option value="161">161 — To Do Your Will Is My Delight</option>
+</select> <span class="song-title" id="song3Title"></span> <span class="song-title" id="song2Title"></span> <span class="song-title" id="song1Title"></span>
+</div>
+</div>
+<div class="field">
+<div class="label"><label for="song2Input">Song 2:</label></div>
+<div class="controls">
+<select id="song2Input">
+<option value="">Select a song…</option>
+<option value="1">1 — Jehovah’s Attributes</option>
+<option value="2">2 — Jehovah Is Your Name</option>
+<option value="3">3 — Our Strength, Our Hope, Our Confidence</option>
+<option value="4">4 — “Jehovah Is My Shepherd”</option>
+<option value="5">5 — God’s Wondrous Works</option>
+<option value="6">6 — The Heavens Declare God’s Glory</option>
+<option value="7">7 — Jehovah, Our Strength</option>
+<option value="8">8 — Jehovah Is Our Refuge</option>
+<option value="9">9 — Jehovah Is Our King!</option>
+<option value="10">10 — Praise Jehovah Our God!</option>
+<option value="11">11 — Creation Praises God</option>
+<option value="12">12 — Great God, Jehovah</option>
+<option value="13">13 — Christ, Our Model</option>
+<option value="14">14 — Praising Earth’s New King</option>
+<option value="15">15 — Praise Jehovah’s Firstborn!</option>
+<option value="16">16 — Praise Jah for His Son, the Anointed</option>
+<option value="17">17 — “I Want To”</option>
+<option value="18">18 — Grateful for the Ransom</option>
+<option value="19">19 — The Lord’s Evening Meal</option>
+<option value="20">20 — You Gave Your Precious Son</option>
+<option value="21">21 — Keep On Seeking First the Kingdom</option>
+<option value="22">22 — The Kingdom Is in Place—Let It Come!</option>
+<option value="23">23 — Jehovah Begins His Rule</option>
+<option value="24">24 — Come to Jehovah’s Mountain</option>
+<option value="25">25 — A Special Possession</option>
+<option value="26">26 — You Did It for Me</option>
+<option value="27">27 — The Revealing of God’s Sons</option>
+<option value="28">28 — Gaining Jehovah’s Friendship</option>
+<option value="29">29 — Living Up to Our Name</option>
+<option value="30">30 — My Father, My God and Friend</option>
+<option value="31">31 — Oh, Walk With God!</option>
+<option value="32">32 — Take Sides With Jehovah!</option>
+<option value="33">33 — Throw Your Burden on Jehovah</option>
+<option value="34">34 — Walking in Integrity</option>
+<option value="35">35 — “Make Sure of the More Important Things”</option>
+<option value="36">36 — We Guard Our Hearts</option>
+<option value="37">37 — Serving Jehovah Whole-Souled</option>
+<option value="38">38 — He Will Make You Strong</option>
+<option value="39">39 — Make a Good Name With God</option>
+<option value="40">40 — To Whom Do We Belong?</option>
+<option value="41">41 — Please Hear My Prayer</option>
+<option value="42">42 — The Prayer of God’s Servant</option>
+<option value="43">43 — A Prayer of Thanks</option>
+<option value="44">44 — A Prayer of the Lowly One</option>
+<option value="45">45 — The Meditation of My Heart</option>
+<option value="46">46 — We Thank You, Jehovah</option>
+<option value="47">47 — Pray to Jehovah Each Day</option>
+<option value="48">48 — Daily Walking With Jehovah</option>
+<option value="49">49 — Making Jehovah’s Heart Glad</option>
+<option value="50">50 — My Prayer of Dedication</option>
+<option value="51">51 — To God We Are Dedicated!</option>
+<option value="52">52 — Christian Dedication</option>
+<option value="53">53 — Preparing to Preach</option>
+<option value="54">54 — “This Is the Way”</option>
+<option value="55">55 — Fear Them Not!</option>
+<option value="56">56 — Make the Truth Your Own</option>
+<option value="57">57 — Preaching to All Sorts of People</option>
+<option value="58">58 — Searching for Friends of Peace</option>
+<option value="59">59 — Praise Jah With Me</option>
+<option value="60">60 — It Means Their Life</option>
+<option value="61">61 — Forward, You Witnesses!</option>
+<option value="62">62 — The New Song</option>
+<option value="63">63 — We’re Jehovah’s Witnesses!</option>
+<option value="64">64 — Sharing Joyfully in the Harvest</option>
+<option value="65">65 — Move Ahead!</option>
+<option value="66">66 — Declare the Good News</option>
+<option value="67">67 — “Preach the Word”</option>
+<option value="68">68 — Sowing Kingdom Seed</option>
+<option value="69">69 — Go Forward in Preaching the Kingdom!</option>
+<option value="70">70 — Search Out Deserving Ones</option>
+<option value="71">71 — We Are Jehovah’s Army!</option>
+<option value="72">72 — Making Known the Kingdom Truth</option>
+<option value="73">73 — Grant Us Boldness</option>
+<option value="74">74 — Join in the Kingdom Song!</option>
+<option value="75">75 — “Here I Am! Send Me!”</option>
+<option value="76">76 — How Does It Make You Feel?</option>
+<option value="77">77 — Light in a Darkened World</option>
+<option value="78">78 — “Teaching the Word of God”</option>
+<option value="79">79 — Teach Them to Stand Firm</option>
+<option value="80">80 — “Taste and See That Jehovah Is Good”</option>
+<option value="81">81 — The Life of a Pioneer</option>
+<option value="82">82 — “Let Your Light Shine”</option>
+<option value="83">83 — “From House to House”</option>
+<option value="84">84 — Reaching Out</option>
+<option value="85">85 — Welcome One Another</option>
+<option value="86">86 — We Must Be Taught</option>
+<option value="87">87 — Come! Be Refreshed</option>
+<option value="88">88 — Make Me Know Your Ways</option>
+<option value="89">89 — Listen, Obey, and Be Blessed</option>
+<option value="90">90 — Encourage One Another</option>
+<option value="91">91 — Our Labor of Love</option>
+<option value="92">92 — A Place Bearing Your Name</option>
+<option value="93">93 — Bless Our Meeting Together</option>
+<option value="94">94 — Grateful for God’s Word</option>
+<option value="95">95 — The Light Gets Brighter</option>
+<option value="96">96 — God’s Own Book—A Treasure</option>
+<option value="97">97 — Life Depends on God’s Word</option>
+<option value="98">98 — The Scriptures—Inspired of God</option>
+<option value="99">99 — Myriads of Brothers</option>
+<option value="100">100 — Receive Them With Hospitality</option>
+<option value="101">101 — Working Together in Unity</option>
+<option value="102">102 — “Assist Those Who Are Weak”</option>
+<option value="103">103 — Shepherds—Gifts in Men</option>
+<option value="104">104 — God’s Gift of Holy Spirit</option>
+<option value="105">105 — “God Is Love”</option>
+<option value="106">106 — Cultivating the Quality of Love</option>
+<option value="107">107 — The Divine Pattern of Love</option>
+<option value="108">108 — God’s Loyal Love</option>
+<option value="109">109 — Love Intensely From the Heart</option>
+<option value="110">110 — “The Joy of Jehovah”</option>
+<option value="111">111 — Our Reasons for Joy</option>
+<option value="112">112 — Jehovah, God of Peace</option>
+<option value="113">113 — Our Possession of Peace</option>
+<option value="114">114 — “Exercise Patience”</option>
+<option value="115">115 — Gratitude for Divine Patience</option>
+<option value="116">116 — The Power of Kindness</option>
+<option value="117">117 — The Quality of Goodness</option>
+<option value="118">118 — “Give Us More Faith”</option>
+<option value="119">119 — We Must Have Faith</option>
+<option value="120">120 — Imitate Christ’s Mildness</option>
+<option value="121">121 — We Need Self-Control</option>
+<option value="122">122 — Be Steadfast, Immovable!</option>
+<option value="123">123 — Loyally Submitting to Theocratic Order</option>
+<option value="124">124 — Ever Loyal</option>
+<option value="125">125 — “Happy Are the Merciful!”</option>
+<option value="126">126 — Stay Awake, Stand Firm, Grow Mighty</option>
+<option value="127">127 — The Sort of Person I Should Be</option>
+<option value="128">128 — Enduring to the End</option>
+<option value="129">129 — We Will Keep Enduring</option>
+<option value="130">130 — Be Forgiving</option>
+<option value="131">131 — “What God Has Yoked Together”</option>
+<option value="132">132 — Now We Are One</option>
+<option value="133">133 — Worship Jehovah During Youth</option>
+<option value="134">134 — Children Are a Trust From God</option>
+<option value="135">135 — Jehovah’s Warm Appeal: “Be Wise, My Son”</option>
+<option value="136">136 — “A Perfect Wage” From Jehovah</option>
+<option value="137">137 — Faithful Women, Christian Sisters</option>
+<option value="138">138 — Beauty in Gray-Headedness</option>
+<option value="139">139 — See Yourself When All Is New</option>
+<option value="140">140 — Life Without End—At Last!</option>
+<option value="141">141 — The Miracle of Life</option>
+<option value="142">142 — Holding Fast to Our Hope</option>
+<option value="143">143 — Keep Working, Watching, and Waiting</option>
+<option value="144">144 — Keep Your Eyes on the Prize!</option>
+<option value="145">145 — God’s Promise of Paradise</option>
+<option value="146">146 — “Making All Things New”</option>
+<option value="147">147 — Life Everlasting Is Promised</option>
+<option value="148">148 — Jehovah Provides Escape</option>
+<option value="149">149 — A Victory Song</option>
+<option value="150">150 — Seek God for Your Deliverance</option>
+<option value="151">151 — He Will Call</option>
+<option value="152">152 — A Place That Will Bring You Praise</option>
+<option value="153">153 — Give Me Courage</option>
+<option value="154">154 — Unfailing Love</option>
+<option value="155">155 — Our Joy Eternally</option>
+<option value="156">156 — With Eyes of Faith</option>
+<option value="157">157 — Peace at Last!</option>
+<option value="158">158 — “It Will Not Be Late!”</option>
+<option value="159">159 — Give Jehovah Glory</option>
+<option value="160">160 — “Good News”!</option>
+<option value="161">161 — To Do Your Will Is My Delight</option>
+</select>
+</div>
+</div>
+<div class="field">
+<div class="label"><label for="song3Input">Song 3:</label></div>
+<div class="controls">
+<select id="song3Input">
+<option value="">Select a song…</option>
+<option value="1">1 — Jehovah’s Attributes</option>
+<option value="2">2 — Jehovah Is Your Name</option>
+<option value="3">3 — Our Strength, Our Hope, Our Confidence</option>
+<option value="4">4 — “Jehovah Is My Shepherd”</option>
+<option value="5">5 — God’s Wondrous Works</option>
+<option value="6">6 — The Heavens Declare God’s Glory</option>
+<option value="7">7 — Jehovah, Our Strength</option>
+<option value="8">8 — Jehovah Is Our Refuge</option>
+<option value="9">9 — Jehovah Is Our King!</option>
+<option value="10">10 — Praise Jehovah Our God!</option>
+<option value="11">11 — Creation Praises God</option>
+<option value="12">12 — Great God, Jehovah</option>
+<option value="13">13 — Christ, Our Model</option>
+<option value="14">14 — Praising Earth’s New King</option>
+<option value="15">15 — Praise Jehovah’s Firstborn!</option>
+<option value="16">16 — Praise Jah for His Son, the Anointed</option>
+<option value="17">17 — “I Want To”</option>
+<option value="18">18 — Grateful for the Ransom</option>
+<option value="19">19 — The Lord’s Evening Meal</option>
+<option value="20">20 — You Gave Your Precious Son</option>
+<option value="21">21 — Keep On Seeking First the Kingdom</option>
+<option value="22">22 — The Kingdom Is in Place—Let It Come!</option>
+<option value="23">23 — Jehovah Begins His Rule</option>
+<option value="24">24 — Come to Jehovah’s Mountain</option>
+<option value="25">25 — A Special Possession</option>
+<option value="26">26 — You Did It for Me</option>
+<option value="27">27 — The Revealing of God’s Sons</option>
+<option value="28">28 — Gaining Jehovah’s Friendship</option>
+<option value="29">29 — Living Up to Our Name</option>
+<option value="30">30 — My Father, My God and Friend</option>
+<option value="31">31 — Oh, Walk With God!</option>
+<option value="32">32 — Take Sides With Jehovah!</option>
+<option value="33">33 — Throw Your Burden on Jehovah</option>
+<option value="34">34 — Walking in Integrity</option>
+<option value="35">35 — “Make Sure of the More Important Things”</option>
+<option value="36">36 — We Guard Our Hearts</option>
+<option value="37">37 — Serving Jehovah Whole-Souled</option>
+<option value="38">38 — He Will Make You Strong</option>
+<option value="39">39 — Make a Good Name With God</option>
+<option value="40">40 — To Whom Do We Belong?</option>
+<option value="41">41 — Please Hear My Prayer</option>
+<option value="42">42 — The Prayer of God’s Servant</option>
+<option value="43">43 — A Prayer of Thanks</option>
+<option value="44">44 — A Prayer of the Lowly One</option>
+<option value="45">45 — The Meditation of My Heart</option>
+<option value="46">46 — We Thank You, Jehovah</option>
+<option value="47">47 — Pray to Jehovah Each Day</option>
+<option value="48">48 — Daily Walking With Jehovah</option>
+<option value="49">49 — Making Jehovah’s Heart Glad</option>
+<option value="50">50 — My Prayer of Dedication</option>
+<option value="51">51 — To God We Are Dedicated!</option>
+<option value="52">52 — Christian Dedication</option>
+<option value="53">53 — Preparing to Preach</option>
+<option value="54">54 — “This Is the Way”</option>
+<option value="55">55 — Fear Them Not!</option>
+<option value="56">56 — Make the Truth Your Own</option>
+<option value="57">57 — Preaching to All Sorts of People</option>
+<option value="58">58 — Searching for Friends of Peace</option>
+<option value="59">59 — Praise Jah With Me</option>
+<option value="60">60 — It Means Their Life</option>
+<option value="61">61 — Forward, You Witnesses!</option>
+<option value="62">62 — The New Song</option>
+<option value="63">63 — We’re Jehovah’s Witnesses!</option>
+<option value="64">64 — Sharing Joyfully in the Harvest</option>
+<option value="65">65 — Move Ahead!</option>
+<option value="66">66 — Declare the Good News</option>
+<option value="67">67 — “Preach the Word”</option>
+<option value="68">68 — Sowing Kingdom Seed</option>
+<option value="69">69 — Go Forward in Preaching the Kingdom!</option>
+<option value="70">70 — Search Out Deserving Ones</option>
+<option value="71">71 — We Are Jehovah’s Army!</option>
+<option value="72">72 — Making Known the Kingdom Truth</option>
+<option value="73">73 — Grant Us Boldness</option>
+<option value="74">74 — Join in the Kingdom Song!</option>
+<option value="75">75 — “Here I Am! Send Me!”</option>
+<option value="76">76 — How Does It Make You Feel?</option>
+<option value="77">77 — Light in a Darkened World</option>
+<option value="78">78 — “Teaching the Word of God”</option>
+<option value="79">79 — Teach Them to Stand Firm</option>
+<option value="80">80 — “Taste and See That Jehovah Is Good”</option>
+<option value="81">81 — The Life of a Pioneer</option>
+<option value="82">82 — “Let Your Light Shine”</option>
+<option value="83">83 — “From House to House”</option>
+<option value="84">84 — Reaching Out</option>
+<option value="85">85 — Welcome One Another</option>
+<option value="86">86 — We Must Be Taught</option>
+<option value="87">87 — Come! Be Refreshed</option>
+<option value="88">88 — Make Me Know Your Ways</option>
+<option value="89">89 — Listen, Obey, and Be Blessed</option>
+<option value="90">90 — Encourage One Another</option>
+<option value="91">91 — Our Labor of Love</option>
+<option value="92">92 — A Place Bearing Your Name</option>
+<option value="93">93 — Bless Our Meeting Together</option>
+<option value="94">94 — Grateful for God’s Word</option>
+<option value="95">95 — The Light Gets Brighter</option>
+<option value="96">96 — God’s Own Book—A Treasure</option>
+<option value="97">97 — Life Depends on God’s Word</option>
+<option value="98">98 — The Scriptures—Inspired of God</option>
+<option value="99">99 — Myriads of Brothers</option>
+<option value="100">100 — Receive Them With Hospitality</option>
+<option value="101">101 — Working Together in Unity</option>
+<option value="102">102 — “Assist Those Who Are Weak”</option>
+<option value="103">103 — Shepherds—Gifts in Men</option>
+<option value="104">104 — God’s Gift of Holy Spirit</option>
+<option value="105">105 — “God Is Love”</option>
+<option value="106">106 — Cultivating the Quality of Love</option>
+<option value="107">107 — The Divine Pattern of Love</option>
+<option value="108">108 — God’s Loyal Love</option>
+<option value="109">109 — Love Intensely From the Heart</option>
+<option value="110">110 — “The Joy of Jehovah”</option>
+<option value="111">111 — Our Reasons for Joy</option>
+<option value="112">112 — Jehovah, God of Peace</option>
+<option value="113">113 — Our Possession of Peace</option>
+<option value="114">114 — “Exercise Patience”</option>
+<option value="115">115 — Gratitude for Divine Patience</option>
+<option value="116">116 — The Power of Kindness</option>
+<option value="117">117 — The Quality of Goodness</option>
+<option value="118">118 — “Give Us More Faith”</option>
+<option value="119">119 — We Must Have Faith</option>
+<option value="120">120 — Imitate Christ’s Mildness</option>
+<option value="121">121 — We Need Self-Control</option>
+<option value="122">122 — Be Steadfast, Immovable!</option>
+<option value="123">123 — Loyally Submitting to Theocratic Order</option>
+<option value="124">124 — Ever Loyal</option>
+<option value="125">125 — “Happy Are the Merciful!”</option>
+<option value="126">126 — Stay Awake, Stand Firm, Grow Mighty</option>
+<option value="127">127 — The Sort of Person I Should Be</option>
+<option value="128">128 — Enduring to the End</option>
+<option value="129">129 — We Will Keep Enduring</option>
+<option value="130">130 — Be Forgiving</option>
+<option value="131">131 — “What God Has Yoked Together”</option>
+<option value="132">132 — Now We Are One</option>
+<option value="133">133 — Worship Jehovah During Youth</option>
+<option value="134">134 — Children Are a Trust From God</option>
+<option value="135">135 — Jehovah’s Warm Appeal: “Be Wise, My Son”</option>
+<option value="136">136 — “A Perfect Wage” From Jehovah</option>
+<option value="137">137 — Faithful Women, Christian Sisters</option>
+<option value="138">138 — Beauty in Gray-Headedness</option>
+<option value="139">139 — See Yourself When All Is New</option>
+<option value="140">140 — Life Without End—At Last!</option>
+<option value="141">141 — The Miracle of Life</option>
+<option value="142">142 — Holding Fast to Our Hope</option>
+<option value="143">143 — Keep Working, Watching, and Waiting</option>
+<option value="144">144 — Keep Your Eyes on the Prize!</option>
+<option value="145">145 — God’s Promise of Paradise</option>
+<option value="146">146 — “Making All Things New”</option>
+<option value="147">147 — Life Everlasting Is Promised</option>
+<option value="148">148 — Jehovah Provides Escape</option>
+<option value="149">149 — A Victory Song</option>
+<option value="150">150 — Seek God for Your Deliverance</option>
+<option value="151">151 — He Will Call</option>
+<option value="152">152 — A Place That Will Bring You Praise</option>
+<option value="153">153 — Give Me Courage</option>
+<option value="154">154 — Unfailing Love</option>
+<option value="155">155 — Our Joy Eternally</option>
+<option value="156">156 — With Eyes of Faith</option>
+<option value="157">157 — Peace at Last!</option>
+<option value="158">158 — “It Will Not Be Late!”</option>
+<option value="159">159 — Give Jehovah Glory</option>
+<option value="160">160 — “Good News”!</option>
+<option value="161">161 — To Do Your Will Is My Delight</option>
+</select>
+</div>
+</div>
+<!-- Closing Prayer -->
+<div class="field" id="prayerEdit">
+<div class="label"><label for="prayerInput">Closing Prayer:</label></div>
+<div class="controls">
+<input id="prayerInput" type="text"/>
+<button class="btn-green" id="prayerSubmit" title="Save">✔</button>
+</div>
+</div>
+<div class="field hidden" id="prayerDisplay">
+<div class="label">Closing Prayer:</div>
+<div class="controls">
+<span id="prayerName"></span>
+<button class="btn-red" id="prayerEditBtn" title="Edit">✕</button>
+</div>
+</div>
+</div>
+<!-- Public Talk -->
+<div class="card" id="publicTalkCard">
+<div style="height:12px; background:#9d7abf; border-radius:12px 12px 0 0; margin:-20px -20px 16px -20px"></div>
+<h2>Public Talk</h2>
+<div class="field" id="ptSpeakerEdit">
+<div class="label"><label for="ptSpeakerInput">Speaker:</label></div>
+<div class="controls">
+<input id="ptSpeakerInput" type="text"/>
+<button class="btn-green" id="ptSpeakerSubmit" title="Save">✔</button>
+</div>
+</div>
+<div class="field hidden" id="ptSpeakerDisplay">
+<div class="label">Speaker:</div>
+<div class="controls">
+<span id="ptSpeakerName"></span>
+<button class="btn-red" id="ptSpeakerEditBtn" title="Edit">✕</button>
+</div>
+</div>
+<div class="field" id="ptCongEdit">
+<div class="label"><label for="ptCongInput">Congregation:</label></div>
+<div class="controls">
+<input id="ptCongInput" type="text"/>
+<button class="btn-green" id="ptCongSubmit" title="Save">✔</button>
+</div>
+</div>
+<div class="field hidden" id="ptCongDisplay">
+<div class="label">Congregation:</div>
+<div class="controls">
+<span id="ptCongName"></span>
+<button class="btn-red" id="ptCongEditBtn" title="Edit">✕</button>
+</div>
+</div>
+<div class="field" id="ptTitleEdit"><div class="label"><label for="ptTitleInput">Title:</label></div><div class="controls"><input id="ptTitleInput" placeholder="Select a theme…" readonly="" style="min-width:520px; max-width:840px;" type="text"/><button class="muted-btn" id="ptThemeOpen" title="Select Theme" type="button">Select</button></div></div><!-- Inline Theme Picker (hidden by default) --><div class="card" id="ptThemePicker" style="display:none; padding:12px; margin-top:8px;"><div class="field"><div class="label">Search:</div><div class="controls"><input id="ptThemeSearch" placeholder="Select the title" type="text"/></div></div><div style="max-height:40vh; overflow:auto; border:1px solid var(--border); border-radius:10px;"><ul class="list" id="ptThemeList" style="padding:8px; margin:0;"></ul></div><div style="display:flex; gap:10px; margin-top:10px;"><button class="muted-btn" id="ptThemeClose" type="button">Close</button><span class="sub">Click a title to select it.</span></div></div>
+<div class="field hidden" id="ptTitleDisplay">
+<div class="label">Title:</div>
+<div class="controls">
+<span id="ptTitleName"></span>
+<button class="btn-red" id="ptTitleEditBtn" title="Edit">✕</button>
+</div>
+</div>
+<div class="field">
+<div class="label"><label for="publicTalkInput">Media:</label></div>
+<div class="controls" style="flex-direction:column; align-items:stretch">
+<textarea id="publicTalkInput" placeholder="Paste media checklist items here"></textarea>
+<div id="pt_btn_row" style="display:flex; gap:10px; margin-top:10px">
+<button class="btn-green" id="btnMakePT">Make checklist</button>
+<button class="muted-btn" id="btnClearPT">Clear</button>
+</div>
+<div id="pt_checklist_container" style="margin-top:10px; border:1px dashed var(--border); padding:8px; border-radius:10px; max-height:50vh; overflow:auto">
+<ul class="list checklist" id="pt_checklist"></ul>
+</div>
+</div>
+</div>
+</div>
+<!-- Playlist (JW Library) -->
+<div class="card" id="playlistCard">
+<div style="height:12px; background:#9d7abf; border-radius:12px 12px 0 0; margin:-20px -20px 16px -20px"></div>
+<h2>Watchtower</h2>
+<div class="sub"><span id="pl_weekRange"></span></div>
+<div class="field">
+<div class="label"><label for="pl_fileInput">File:</label></div>
+<div class="controls">
+<input accept=".jwlplaylist,.jwlibrary" id="pl_fileInput" type="file"/>
+<button class="muted-btn" disabled="" id="pl_extractBtn">Extract</button>
+<span class="sub" id="pl_status"></span>
+</div>
+</div>
+<div class="field">
+<div class="label">Show:</div>
+<div class="controls">
+<label class="show-pill"><input id="pl_filterAll" name="pl_filter" type="radio" name="pl_filter" value="All"/><span>All</span></label>
+<label class="show-pill"><input id="pl_filterPreset" name="pl_filter" type="radio" value="Filtered" checked/><span>Filtered</span></label>
+<label class="show-pill"><input id="pl_filterCustom" name="pl_filter" type="radio" name="pl_filter" value="Custom"/><span>Custom</span></label>
+<label class="show-pill"><input id="pl_filterPaste" name="pl_filter" type="radio" name="pl_filter" value="Paste"/><span>Paste</span></label>
+</div>
+</div>
+<div class="field hidden" id="pl_customFilters">
+<div class="label">Custom rules:</div>
+<div class="controls" style="flex-direction:column; align-items:stretch">
+<input id="pl_excludeExact" placeholder="Exclude exact labels (comma-separated)" type="text" value="Title,Title Page,Review"/>
+<input id="pl_excludePrefixes" placeholder="Exclude prefixes (comma-separated)" type="text" value="Q ,R, Subheading "/>
+</div>
+</div>
+<div class="field">
+<div class="label"><label for="pl_conductorInput">Conductor:</label></div>
+<div class="controls">
+<input id="pl_conductorInput" type="text"/>
+<span class="sub" style="margin-left:auto"><span id="pl_countShown">0</span> shown · <span id="pl_countTotal">0</span> total</span>
+</div>
+</div>
+<div class="field">
+<div class="label">Title:</div>
+<div class="controls">
+<span class="sub" id="pl_itemTitle" style="font-style:italic"></span>
+</div>
+</div>
+<div class="field" style="align-items:start">
+<div class="label">Checklist:</div>
+<div class="controls" style="flex-direction:column; align-items:stretch">
+<div class="list checklist checklist-container" id="pl_checklist" style=" border:1px dashed var(--border); padding:8px; border-radius:10px"></div>
+</div>
+</div>
+</div>
+<!-- Checklist -->
+<div class="card hidden" id="checklistCard">
+<div style="height:12px; background:#9d7abf; border-radius:12px 12px 0 0; margin:-20px -20px 16px -20px"></div>
+<h2>Checklist</h2>
+<ul class="list checklist" id="checklist"></ul>
+<button class="muted-btn" id="btnBack">Back</button>
+</div>
+</div>
+<script>
+// Date header (next Saturday, 10:30 am)
+function nextSaturdayDate(d=new Date()){
+  const day=d.getDay();
+  const diff=(6-day+7)%7;
+  const nextSat=new Date(d);
+  nextSat.setDate(d.getDate()+diff);
+  return nextSat;
+}
+function formatDateLong(d){
+  return d.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+/* dateLine disabled per user request */
+
+// Role save/edit (✔ / ✕)
+function setupRole(baseKey){
+  const key='jw-role-'+baseKey;
+  const edit=document.getElementById(baseKey+'Edit');
+  const display=document.getElementById(baseKey+'Display');
+  const input=document.getElementById(baseKey+'Input');
+  const nameSpan=document.getElementById(baseKey+'Name');
+  const submit=document.getElementById(baseKey+'Submit');
+  const editBtn=document.getElementById(baseKey+'EditBtn');
+
+  function setView(value){
+    if(!edit || !display) return;
+    if(value && value.trim()){
+      if(nameSpan) nameSpan.textContent=value.trim();
+      edit.classList.add('hidden');
+      display.classList.remove('hidden');
+    } else {
+      edit.classList.remove('hidden');
+      display.classList.add('hidden');
+    }
+  }
+
+  if (submit) submit.addEventListener('click',(e)=>{
+    e.preventDefault();
+    const v = input ? (input.value||'') : '';
+    try{ localStorage.setItem(key,v); }catch(e){}
+    setView(v);
+  });
+
+  if (editBtn) editBtn.addEventListener('click',(e)=>{
+    e.preventDefault();
+    const v = localStorage.getItem(key) || '';
+    if (input) input.value = v;
+    setView('');
+  });
+
+  const saved = localStorage.getItem(key) || '';
+  if (input && saved && !input.value) input.value = saved;
+  setView(saved);
+}
+
+// Wire roles (including Watchtower Title)
+['opening','chair','prayer','ptSpeaker','ptCong','ptTitle','conductor','wtTitle'].forEach(setupRole);
+
+// Songs: basic change handler
+['song1Input','song2Input','song3Input'].forEach(id=>{
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('change',()=>{ /* no-op, selection is visible */ });
+});
+
+// Checklist logic
+const watchtowerCard=document.getElementById('watchtowerCard');
+const publicTalkCard=document.getElementById('publicTalkCard');
+const checklistCard=document.getElementById('checklistCard');
+const checklist=document.getElementById('checklist');
+const allTitles=[];
+
+function isExcludedFiltered(t){
+  const s=(t||'').trim().toLowerCase();
+  if(!s) return false;
+  if (s==='title' || s==='title page') return true;
+  if (s.startsWith('subheading')) return true;
+  if (/^[qr]\b/.test(s)) return true;
+  if (s==='review' || s.startsWith('review')) return true;
+  return false;
+}
+
+function buildChecklist(list){
+  checklist.innerHTML='';
+  list.forEach((t,i)=>{
+    const id='chk-'+(i+1);
+    const li=document.createElement('li');
+    li.innerHTML = '<input type="checkbox" id="'+id+'"> <label for="'+id+'">'+t+'</label>';
+    checklist.appendChild(li);
+  });
+}
+
+function showChecklist(finalList){
+  publicTalkCard.classList.add('hidden');
+  watchtowerCard.classList.add('hidden');
+  checklistCard.classList.remove('hidden');
+  buildChecklist(finalList);
+}
+
+document.getElementById('btnAll').addEventListener('click',()=>showChecklist(allTitles));
+document.getElementById('btnFiltered').addEventListener('click',()=>{
+  const filtered=allTitles.filter(t=>!isExcludedFiltered(t));
+  showChecklist(filtered);
+});
+document.getElementById('btnBack').addEventListener('click',()=>{
+  checklistCard.classList.add('hidden');
+  publicTalkCard.classList.remove('hidden');
+  watchtowerCard.classList.remove('hidden');
+});
+
+// Public Talk paste -> checklist
+document.getElementById('btnMakePT').addEventListener('click',()=>{
+  const raw=document.getElementById('publicTalkInput').value||'';
+  const lines=raw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  if (lines.length===0) return;
+  showChecklist(lines);
+});
+document.getElementById('btnClearPT').addEventListener('click',()=>{
+  document.getElementById('publicTalkInput').value='';
+});
+
+// Autosave for text inputs
+function autoSaveText(inputId, storageKey){
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  const saved = localStorage.getItem(storageKey);
+  if (saved !== null) el.value = saved;
+  el.addEventListener('input', () => {
+    try { localStorage.setItem(storageKey, el.value); } catch(e) {}
+  });
+}
+document.addEventListener('DOMContentLoaded', () => {
+  autoSaveText('openingInput','jw-role-opening');
+  autoSaveText('chairInput','jw-role-chair');
+  autoSaveText('prayerInput','jw-role-prayer');
+  autoSaveText('ptSpeakerInput','jw-role-ptSpeaker');
+  autoSaveText('ptCongInput','jw-role-ptCong');
+  autoSaveText('ptTitleInput','jw-role-ptTitle');
+  autoSaveText('conductorInput','jw-role-conductor');
+  autoSaveText('wtTitleInput','jw-role-wtTitle');
+  autoSaveText('publicTalkInput','jw-role-publicTalkMedia');
+});
+
+// URL extract helpers
+async function _tryFetch(url){
+  try{ const r = await fetch(url); if(!r.ok) throw new Error('HTTP '+r.status); return await r.text(); }
+  catch(e){ return null; }
+}
+function _parseChaptersJSON(txt){
+  try{
+    const data=JSON.parse(txt);
+    if(Array.isArray(data)) return data.map(x=>typeof x==='string'?x:(x.title||'')).filter(Boolean);
+    if(data && Array.isArray(data.chapters)) return data.chapters.map(ch=>ch.title||'').filter(Boolean);
+  }catch(e){}
+  return [];
+}
+function _parseVTT(txt){
+  const lines=txt.split(/\r?\n/); const titles=[]; let buffer=[];
+  for(const line of lines){
+    if(/^\d{2}:\d{2}:\d{2}\.\d{3}\s+-->\s+\d{2}:\d{2}:\d{2}\.\d{3}/.test(line)){
+      if(buffer.length){ titles.push(buffer.join(' ').trim()); buffer=[]; } continue;
+    }
+    if(!line.trim() || line.startsWith('WEBVTT') || line.startsWith('NOTE')) continue;
+    buffer.push(line.trim());
+  }
+  if(buffer.length) titles.push(buffer.join(' ').trim());
+  return titles.filter(Boolean);
+}
+(function(){
+  const rbUrl = document.getElementById('srcUrl');
+  const rbPaste = document.getElementById('srcPaste');
+  const rowUrl = document.getElementById('urlSourceRow');
+  const rowPaste = document.getElementById('pasteSourceRow');
+  function showUrl(){ if(rowUrl) rowUrl.style.display=''; if(rowPaste) rowPaste.style.display='none'; }
+  function showPaste(){ if(rowUrl) rowUrl.style.display='none'; if(rowPaste) rowPaste.style.display=''; }
+  if (rbUrl && rbPaste){
+    rbUrl.addEventListener('change', () => { if(rbUrl.checked) showUrl(); });
+    rbPaste.addEventListener('change', () => { if(rbPaste.checked) showPaste(); });
+  }
+})();
+
+(function(){
+  const btn = document.getElementById('btnExtract');
+  const input = document.getElementById('videoUrl');
+  const status = document.getElementById('extractStatus');
+  if(!btn || !input) return;
+  function setStatus(msg){ if(status) status.textContent = msg; }
+  btn.addEventListener('click', async ()=>{
+    const url = (input.value||'').trim();
+    if(!url){ setStatus('Enter a video URL.'); return; }
+    setStatus('Extracting…');
+    const candidates = [];
+    if (/\.mp4(\?|$)/i.test(url)){
+      candidates.push(url.replace(/\.mp4(\?.*)?$/i, '.chapters.json'));
+      candidates.push(url + '.chapters.json');
+      candidates.push(url.replace(/\.mp4(\?.*)?$/i, '.vtt'));
+      candidates.push(url.replace(/\.mp4(\?.*)?$/i, '.chapters.vtt'));
+    } else {
+      candidates.push(url + '.chapters.json');
+      candidates.push(url + '.vtt');
+    }
+    let found = [];
+    for(const c of candidates){
+      const txt = await _tryFetch(c);
+      if(!txt) continue;
+      const j = _parseChaptersJSON(txt);
+      if(j.length){ found=j; break; }
+      const v = _parseVTT(txt);
+      if(v.length){ found=v; break; }
+    }
+    if(!found.length){ setStatus('No chapters found (need .chapters.json or .vtt, and CORS).'); return; }
+    allTitles.length = 0;
+    found.forEach(t => allTitles.push(t));
+    setStatus('Loaded ' + found.length + ' titles. Use "Include all" or "Filtered".');
+  });
+})();
+
+// Manual paste handling
+(function(){
+  const manual = document.getElementById('manualTitles');
+  const pasteStatus = document.getElementById('pasteStatus');
+  const btnUseManual = document.getElementById('btnUseManual');
+  if (!btnUseManual) return;
+  function setStatus(msg){ if(pasteStatus) pasteStatus.textContent = msg; }
+  btnUseManual.addEventListener('click', () => {
+    const raw = (manual && manual.value) ? manual.value : '';
+    const lines = (raw || '').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+    if (!lines.length){ setStatus('Paste at least one title.'); return; }
+    allTitles.length = 0;
+    lines.forEach(t => allTitles.push(t));
+    setStatus('Loaded ' + lines.length + ' titles. Use "Include all" or "Filtered".');
+  });
+})();
+
+// Clear All Saved Inputs (roles only)
+(function(){
+  const btn = document.getElementById('btnClearSaved');
+  if(!btn) return;
+  const keys = [
+    'jw-role-opening',
+    'jw-role-chair',
+    'jw-role-conductor',
+    'jw-role-prayer',
+    'jw-role-ptSpeaker',
+    'jw-role-ptCong',
+    'jw-role-ptTitle',
+    'jw-role-wtTitle',
+    'jw-song1Input','jw-song2Input','jw-song3Input'
+  ];
+  function clearFields(){
+    keys.forEach(k => { try { localStorage.removeItem(k); } catch(e){} });
+    const ids = [
+      'openingInput','chairInput','conductorInput','prayerInput',
+      'ptSpeakerInput','ptCongInput','ptTitleInput','wtTitleInput'
+    ];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.tagName === 'INPUT') el.value = '';
+      if (el && el.tagName === 'SELECT') { el.selectedIndex = 0; }
+    });
+  }
+  btn.addEventListener('click', () => {
+    clearFields();
+    alert('Input files have been cleared.');
+  });
+})();
+</script>
+<!-- Playlist extractor dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.9.0/dist/sql-wasm.js"></script>
+<script>
+// Compute current week range in Pacific Time (unified with app date style)
+(function(){
+  try {
+    const now = new Date();
+    const pac = new Date(now.toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
+    const day = pac.getDay(); // 0..6
+    const monday = new Date(pac); monday.setDate(pac.getDate() - ((day+6)%7));
+    const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+    const fmt = (d) => d.toLocaleDateString(undefined, { month: "long", day: "numeric" });
+    const text = fmt(monday) + "–" + fmt(sunday) + ", " + sunday.getFullYear();
+    const span = document.getElementById("pl_weekRange");
+    if (span) span.textContent = text;
+  } catch(e){ console.error(e); }
+})();
+
+// Helpers
+function pl_parseCsvLike(s){ return (s||"").split(",").map(x=>x.trim()).filter(Boolean); }
+function pl_getMode(){ if (pl_filterCustom.checked) return "custom"; if (pl_filterPreset.checked) return "preset"; return "all"; }
+function pl_applyMode(rows){
+  const mode = pl_getMode();
+  if (mode === "all") return rows.slice();
+  if (mode === "preset"){
+    const exact = new Set(["Title","Title Page","Review"]);
+    const prefixes = ["Q ","R ","Subheading "];
+    return rows.filter(r => {
+      const lbl = r.label || "";
+      if (exact.has(lbl)) return false;
+      return !prefixes.some(p => lbl.startsWith(p));
+    });
+  }
+  const exact = new Set(pl_parseCsvLike(pl_excludeExact.value));
+  const prefixes = pl_parseCsvLike(pl_excludePrefixes.value);
+  return rows.filter(r => {
+    const lbl = r.label || "";
+    if (exact.has(lbl)) return false;
+    return !prefixes.some(p => lbl.startsWith(p));
+  });
+}
+
+// Elements
+const pl_file = document.getElementById("pl_fileInput");
+const pl_btn = document.getElementById("pl_extractBtn");
+const pl_status = document.getElementById("pl_status");
+const pl_itemTitle = document.getElementById("pl_itemTitle");
+const pl_conductor = document.getElementById("pl_conductorInput");
+const pl_countShown = document.getElementById("pl_countShown");
+const pl_countTotal = document.getElementById("pl_countTotal");
+const pl_checklist = document.getElementById("pl_checklist");
+const pl_filterAll = document.getElementById("pl_filterAll");
+const pl_filterPreset = document.getElementById("pl_filterPreset");
+const pl_filterCustom = document.getElementById("pl_filterCustom");
+const pl_customFilters = document.getElementById("pl_customFilters");
+const pl_excludeExact = document.getElementById("pl_excludeExact");
+const pl_excludePrefixes = document.getElementById("pl_excludePrefixes");
+
+// Persistence keys (scoped to playlist tool only)
+const PL_FILTER_MODE_KEY = "playlist_filter_mode";
+const PL_FILTER_EXACT_KEY = "playlist_filter_exact";
+const PL_FILTER_PREFIX_KEY = "playlist_filter_prefix";
+const PL_CONDUCTOR_KEY = "playlist_conductor";
+const PL_CHECKS_KEY_PREFIX = "playlist_checks_";
+
+let PL_SQL_OK = false;
+let plPickedFile = null;
+let plAll = [];
+let plShown = [];
+let plTitle = "";
+
+// Status helpers
+function pl_setStatus(msg){ if (pl_status) pl_status.textContent = msg || ""; }
+
+// Init sql.js
+(async function pl_initSQL(){
+  try {
+    window.initSqlJs && (window.SQL = await initSqlJs({ locateFile: f => "https://cdn.jsdelivr.net/npm/sql.js@1.9.0/dist/" + f }));
+    PL_SQL_OK = !!window.SQL;
+    if (!PL_SQL_OK) throw new Error("sql.js failed to initialize.");
+  } catch (err) {
+    pl_setStatus("SQL init error: " + (err && err.message ? err.message : String(err)));
+  }
+})();
+
+// Restore filter + conductor preferences
+(function(){
+  try {
+    const savedMode = localStorage.getItem(PL_FILTER_MODE_KEY);
+    const mode = savedMode || "preset";
+    pl_filterAll.checked = (mode==="all");
+    pl_filterPreset.checked = (mode==="preset");
+    pl_filterCustom.checked = (mode==="custom");
+    const savedExact = localStorage.getItem(PL_FILTER_EXACT_KEY);
+    if (savedExact !== null) pl_excludeExact.value = savedExact;
+    const savedPrefix = localStorage.getItem(PL_FILTER_PREFIX_KEY);
+    if (savedPrefix !== null) pl_excludePrefixes.value = savedPrefix;
+  } catch(_) {}
+  function savePrefs(){
+    try{
+      localStorage.setItem(PL_FILTER_MODE_KEY, pl_getMode());
+      localStorage.setItem(PL_FILTER_EXACT_KEY, pl_excludeExact.value || "");
+      localStorage.setItem(PL_FILTER_PREFIX_KEY, pl_excludePrefixes.value || "");
+    }catch(_){}
+  }
+  [pl_filterAll,pl_filterPreset,pl_filterCustom].forEach(el=>el && el.addEventListener("change", ()=>{
+    if (pl_getMode()==="custom") pl_customFilters.classList.remove("hidden"); else pl_customFilters.classList.add("hidden");
+    savePrefs(); plShown = pl_applyMode(plAll); pl_render(plShown);
+  }));
+  pl_excludeExact.addEventListener("input", ()=>{ savePrefs(); plShown = pl_applyMode(plAll); pl_render(plShown); });
+  pl_excludePrefixes.addEventListener("input", ()=>{ savePrefs(); plShown = pl_applyMode(plAll); pl_render(plShown); });
+  try { const savedC = localStorage.getItem(PL_CONDUCTOR_KEY); if (savedC !== null) pl_conductor.value = savedC; } catch(_){}
+  pl_conductor.addEventListener("input", ()=>{ try { localStorage.setItem(PL_CONDUCTOR_KEY, pl_conductor.value || ""); } catch(_){}});
+})();
+
+function pl_checksKey(){ const t = (plTitle||"").trim(); return PL_CHECKS_KEY_PREFIX + (t || "untitled"); }
+function pl_loadChecks(){ try { const raw = localStorage.getItem(pl_checksKey()); if (!raw) return new Set(); const arr = JSON.parse(raw); return new Set(arr.map(n=>Number(n)).filter(Number.isInteger)); } catch(_) { return new Set(); } }
+function pl_saveChecks(){ try { const boxes = pl_checklist.querySelectorAll('input[type="checkbox"][data-idx]'); const checked = []; boxes.forEach(b=>{ if(b.checked) checked.push(Number(b.dataset.idx)); }); localStorage.setItem(pl_checksKey(), JSON.stringify(checked)); } catch(_) {} }
+
+function pl_render(rows){
+  pl_checklist.innerHTML = "";
+  const saved = pl_loadChecks();
+  rows.forEach((r,i)=>{
+    const li = document.createElement("div");
+    li.className = "field"; // reuse baseline spacing
+    const lb = document.createElement("div"); lb.className = "label"; lb.textContent = "";
+    const ct = document.createElement("div"); ct.className = "controls";
+    const box = document.createElement("input"); box.type="checkbox"; box.dataset.idx=String(i); box.checked = saved.has(i);
+    const span = document.createElement("span"); span.textContent = String(r.label||"");
+    box.addEventListener("change", pl_saveChecks);
+    ct.appendChild(box); ct.appendChild(span);
+    li.appendChild(lb); li.appendChild(ct);
+    pl_checklist.appendChild(li);
+  });
+  pl_countTotal.textContent = String(plAll.length);
+  pl_countShown.textContent = String(rows.length);
+  pl_itemTitle.textContent = plTitle || "";
+  pl_saveChecks();
+}
+
+async function pl_loadZipAndDb(file){
+  if (!PL_SQL_OK) throw new Error("SQL engine not ready.");
+  const zip = await JSZip.loadAsync(file);
+  let dbEntry = zip.file("userData.db");
+  if (!dbEntry){
+    const cand = zip.file(/\.db$/i)[0];
+    if (!cand) throw new Error("userData.db not found in file.");
+    dbEntry = cand;
+  }
+  const buf = await dbEntry.async("arraybuffer");
+  const db = new SQL.Database(new Uint8Array(buf));
+  return db;
+}
+
+function pl_queryFirstItemMarkers(db){
+  const it = db.exec("SELECT PlaylistItemId, Label FROM PlaylistItem ORDER BY PlaylistItemId ASC LIMIT 1");
+  if (!it.length || !it[0].values.length) throw new Error("No PlaylistItem found.");
+  const firstId = Number(it[0].values[0][0]);
+  const firstTitle = String(it[0].values[0][1] || "");
+  const res = db.exec("SELECT m.Label FROM PlaylistItemMarker m WHERE m.PlaylistItemId = " + firstId + " ORDER BY m.StartTimeTicks");
+  const rows = (!res.length ? [] : res[0].values).map(v => ({ label: String(v[0] || "") }));
+  return { title:firstTitle, rows };
+}
+
+async function pl_doExtract(){
+  try{
+    pl_setStatus("Opening package...");
+    if (!plPickedFile) throw new Error("No file selected.");
+    pl_btn.disabled = true; pl_btn.textContent = "Extracting…";
+    plAll = []; plShown = []; plTitle = ""; pl_render([]);
+    const db = await pl_loadZipAndDb(plPickedFile);
+    const { title, rows } = pl_queryFirstItemMarkers(db);
+    plTitle = title; plAll = rows; plShown = pl_applyMode(plAll);
+    pl_render(plShown);
+    pl_setStatus("Done. " + plShown.length + " markers loaded.");
+  }catch(err){
+    pl_setStatus(err && err.message ? err.message : String(err));
+  }finally{
+    pl_btn.disabled = false; pl_btn.textContent = "Extract";
+  }
+}
+
+// Wire events
+pl_file.addEventListener("change", async (e)=>{
+  const f = e.target.files && e.target.files[0];
+  if (f){
+    plPickedFile = f;
+    pl_btn.disabled = false;
+    try { await pl_doExtract(); } catch(_){}
+  } else {
+    pl_btn.disabled = true;
+  }
+});
+pl_btn.addEventListener("click", async ()=>{ try { await pl_doExtract(); } catch(_){}});
+</script>
+<!-- Autosave text inputs & textareas (persist until Clear all) -->
+<script>
+(function(){
+  const KEYSET = 'autosave_dynamic_keys_v1';
+  function getKeys(){
+    try { return JSON.parse(localStorage.getItem(KEYSET) || '[]'); } catch(_) { return []; }
+  }
+  function saveKeys(list){
+    try { localStorage.setItem(KEYSET, JSON.stringify(list)); } catch(_) {}
+  }
+  function addKey(k){
+    const list = getKeys();
+    if (!list.includes(k)) { list.push(k); saveKeys(list); }
+  }
+
+  // Target most text inputs and textareas (exclude file inputs)
+  const targets = Array.from(document.querySelectorAll('input[type="text"], textarea'))
+    .filter(el => el && el.id && el.getAttribute('type') !== 'file');
+
+  // Restore + save on input
+  targets.forEach(el => {
+    const key = 'jw-auto-' + el.id;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved !== null) el.value = saved;
+    } catch(_) {}
+    el.addEventListener('input', () => {
+      try { localStorage.setItem(key, el.value || ''); addKey(key); } catch(_) {}
+    });
+  });
+
+  // Hook Clear all to wipe dynamic autosave keys too
+  const btn = document.getElementById('btnClearSaved');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      try {
+        const list = getKeys();
+        list.forEach(k => { try { localStorage.removeItem(k); } catch(_) {} });
+        localStorage.removeItem(KEYSET);
+        try { document.querySelectorAll('input[type="text"], textarea').forEach(el => { el.value = ''; }); } catch(_) {}
+        try { localStorage.removeItem('playlist_conductor'); } catch(_) {}
+        var plc = document.getElementById('pl_conductorInput'); if (plc) plc.value = '';
+        try { localStorage.removeItem('playlist_conductor'); } catch(_){ }
+        var plc = document.getElementById('pl_conductorInput'); if (plc) plc.value = '';
+      } catch(_) {}
+    });
+  }
+})();
+</script>
+<script>
+// === Media -> Checklist wiring (inline in Public Talk card with temporary hide) ===
+(function(){
+  const txt = document.getElementById('publicTalkInput');       // Media textarea
+  const makeBtn = document.getElementById('btnMakePT');         // "Make checklist"
+  const clearBtn = document.getElementById('btnClearPT');       // "Clear"
+  const btnRow = document.getElementById('pt_btn_row');         // Buttons row
+  const ptChecklist = document.getElementById('pt_checklist');  // Inline checklist UL
+  const container = document.getElementById('pt_checklist_container'); // Wrapper div for checklist
+
+  if (!makeBtn || !txt || !ptChecklist || !container) return;
+
+  // Create a Back button (local to Public Talk card) if not present
+  let backBtn = document.getElementById('pt_backBtn');
+  if (!backBtn){
+    backBtn = document.createElement('button');
+    backBtn.id = 'pt_backBtn';
+    backBtn.className = 'muted-btn';
+    backBtn.textContent = 'Back';
+    backBtn.style.marginTop = '10px';
+    backBtn.style.display = 'none'; // hidden by default
+    container.appendChild(backBtn);
+  }
+
+  function buildChecklist(items){
+    ptChecklist.innerHTML = '';
+    items.forEach((t,i)=>{
+      const li = document.createElement('li');
+      const id = 'pt-chk-' + (i+1);
+      li.innerHTML = '<input type="checkbox" id="'+id+'"> <label for="'+id+'">'+t+'</label>';
+      ptChecklist.appendChild(li);
+    });
+  }
+
+  function hideInputs(){
+    if (txt) txt.style.display = 'none';
+    if (btnRow) btnRow.style.display = 'none';
+    if (backBtn) backBtn.style.display = '';
+  }
+  function showInputs(){
+    if (txt) txt.style.display = '';
+    if (btnRow) btnRow.style.display = 'flex';
+    if (backBtn) backBtn.style.display = 'none';
+  }
+
+  makeBtn.addEventListener('click', ()=>{
+    const raw = (txt && txt.value) ? txt.value : '';
+    // Split by newlines; if there are no newlines, allow comma separation as fallback
+    const items = raw.includes('\n') ? raw.split(/\r?\n/) : raw.split(',');
+    const cleaned = items.map(s=>s.trim()).filter(Boolean);
+    if (!cleaned.length) return;
+    buildChecklist(cleaned);
+    hideInputs();
+  });
+
+  if (clearBtn){
+    clearBtn.addEventListener('click', ()=>{
+      if (txt) txt.value = '';
+      if (ptChecklist) ptChecklist.innerHTML = '';
+    });
+  }
+
+  backBtn.addEventListener('click', ()=>{
+    showInputs();
+  });
+})();</script>
+<script>
+// === Public Talk Theme Picker (search + select, inline; auto-saves; hides Save) ===
+(function(){
+  const THEMES = ["How Well Do You Know God? (1)", "Will You Be a Survivor of the Last Days? (2)", "Move Ahead With Jehovah’s Unified Organization (3)", "Evidence of God in the World Around Us (4)", "Real Help for the Family (5)", "The Flood of Noah’s Day and You (6)", "Imitate “the Father of Tender Mercies” (7)", "Living to Do God’s Will, Not Our Own (8)", "Be a Hearer and a Doer of God’s Word (9)", "Be Honest in All You Say and Do (10)", "“No Part of the World”—In Imitation of Christ (11)", "Your View of Authority Matters to God (12)", "A Godly View of Sex and Marriage (13)", "A Clean People Honors Jehovah (14)", "“Work What Is Good Toward All” (15)", "Keep Growing in Your Relationship With God (16)", "Glorifying God With All We Have (17)", "Make Jehovah Your Stronghold (18)", "Your Future—How Can It Be Known? (19)", "Is It Time for God to Rule the World? (20)", "Cherish Your Place in the Kingdom Arrangement (21)", "Are You Benefiting From Jehovah’s Provisions? (22)", "Life Does Have a Purpose (23)", "Have You Found a “Pearl of High Value”? (24)", "Resist the Spirit of the World! (25)", "Do You Matter to God? (26)", "Getting Marriage Off to a Good Start (27)", "Show Respect and Love in Your Marriage (28)", "The Responsibilities and Rewards of Parenthood (29)", "How to Improve Family Communication (30)", "Are You Conscious of Your Spiritual Need? (31)", "Coping With Life’s Anxieties (32)", "Will We Ever See True Justice? (33)", "Will You Be Marked for Survival? (34)", "Can You Live Forever? Will You? (35)", "Is This Life All There Is? (36)", "Are God’s Ways Really Beneficial? (37)", "How Can You Survive the End of the World? (38)", "Jesus Christ, World Conqueror—How and When? (39)", "What Does the Near Future Hold? (40)", "“Stand Still, and See the Salvation of Jehovah” (41)", "Can Love Conquer Hatred? (42)", "God’s Requirements—Always Beneficial (43)", "How Can Jesus’ Teachings Benefit You? (44)", "Follow the Way to Life (45)", "Maintain Your Confidence Firm to the End (46)", "(Do not use) (47)", "Meeting the Test of Christian Loyalty (48)", "A Cleansed Earth—Is It Possible? (49)", "How to Make Decisions That Lead to Success (50)", "Is the Truth Transforming Your Life? (51)", "Who Is Your God? (52)", "Does Your Thinking Agree With God’s? (53)", "Build Your Faith in God and His Promises (54)", "How Can You Make a Good Name With God? (55)", "Whose Leadership Can You Trust? (56)", "Bearing Up Under Persecution (57)", "Who Are the Real Followers of Christ? (58)", "(Do not use) (59)", "What Is Your Purpose in Life? (60)", "On Whose Promises Do You Rely? (61)", "Where Can You Find Real Hope? (62)", "Do You Have the Evangelizing Spirit? (63)", "Will You Be a ‘Lover of Pleasures’ or a ‘Lover of God’? (64)", "How to Cultivate Peace in an Angry World (65)", "Will You Be a Worker in the Harvest? (66)", "Meditate on Jehovah’s Word and His Works (67)", "“Continue... Forgiving One Another Freely” (68)", "Why Show Self-Sacrificing Love? (69)", "Why Is God Worthy of Your Trust? (70)", "“Stay Awake”—Why and How? (71)", "Love Identifies the True Christian Congregation (72)", "Acquiring “a Heart of Wisdom” (73)", "Jehovah’s Eyes Are Upon Us (74)", "Support Jehovah’s Rulership in Your Personal Life (75)", "Bible Principles—Can They Help Us to Cope With Today’s Problems? (76)", "“Follow the Course of Hospitality” (77)", "Serve Jehovah With a Joyful Heart (78)", "Whose Friendship Will You Choose? (79)", "Does Your Hope Rest on Science or the Bible? (80)", "Who Are Qualified to Make Disciples? (81)", "(Do not use) (82)", "Must Christians Obey the Ten Commandments? (83)", "Will You Escape This World’s Destiny? (84)", "Good News in a Violent World (85)", "Prayers That Are Heard by God (86)", "What Is Your Relationship With God? (87)", "Why Live by Bible Standards? (88)", "Come, You Who Thirst for the Truth! (89)", "Reach Out for the Real Life! (90)", "The Messiah’s Presence and His Rule (91)", "Religion’s Role in World Affairs (92)", "Natural Disasters—When Will They End? (93)", "True Religion Meets the Needs of Human Society (94)", "Do Not Be Deceived by Spiritism! (95)", "What Is Religion’s Future? (96)", "Remaining Blameless Amid a Crooked Generation (97)", "“The Scene of This World Is Changing” (98)", "Why You Can Trust the Bible (99)", "How to Build Strong and Lasting Friendships (100)", "Jehovah—The “Grand Creator” (101)", "Pay Attention to “the Prophetic Word” (102)", "How Can You Find Real Joy? (103)", "Parents—Are You Building With Fire Resistant Materials? (104)", "Gaining Comfort in All Our Tribulations (105)", "Ruining the Earth Brings Divine Retribution (106)", "Are You Benefiting From a Trained Conscience? (107)", "You Can Face the Future With Confidence! (108)", "The Kingdom of God Is Near (109)", "God Comes First in Successful Family Life (110)", "Complete Healing for Mankind—How? (111)", "(Do not use) (112)", "How Can Youths Find Success and Happiness? (113)", "Appreciating Marvels of God’s Creation (114)", "Protect Yourself From Satan’s Crafty Acts", "156. Judgment Day—A Time of Fear or Hope? (115)", "Choose Your Associates Wisely! (116)", "How to Conquer Evil With Good (117)", "Looking at Youths From Jehovah’s Standpoint (118)", "Christian Separateness From the World—Why Beneficial (119)", "Why Submit to God’s Rulership Now (120)", "A Worldwide Brotherhood Saved From Calamity (121)", "(Do not use) (122)", "(Do not use) (123)", "Basis for Confidence in the Bible’s Divine Authorship (124)", "Why Mankind Needs a Ransom (125)", "Who Can Be Saved? (126)", "What Happens When We Die? (127)", "Is Hell Really a Place of Fiery Torment? (128)", "Is the Trinity a Bible Teaching? (129)", "The Earth Will Remain Forever (130)", "(Do not use) (131)", "The Resurrection—Victory Over Death! (132)", "The Origin of Humans—Does It Matter What You Believe? (133)", "Should Christians Keep the Sabbath? (134)", "The Sacredness of Life and Blood (135)", "Does God Approve of the Use of Images in Worship? (136)", "Did the Miracles of the Bible Really Happen? (137)", "Live With Soundness of Mind in a Depraved World (138)", "Godly Wisdom in a Scientific World (139)", "Who Really Is Jesus Christ? (140)", "Human Creation’s Groaning—When Will It End? (141)", "Why Take Refuge in Jehovah (142)", "Trust in the God of All Comfort (143)", "A Loyal Congregation Under Christ’s Leadership (144)", "Who Is Like Jehovah Our God? (145)", "Use Education to Praise Jehovah (146)", "Trust in Jehovah’s Saving Power (147)", "Do You Share God’s View of Life? (148)", "Are You Walking With God? (149)", "Is This World Doomed to Ruin? (150)", "Jehovah Is “a Secure Height” for His People (151)", "The Real Armageddon—Why? When? (152)", "Keep Close in Mind the “Awe-Inspiring Day”! (153)", "Human Rule—Weighed in the Balance (154)", "Has Babylon’s Judgment Hour Arrived? (155)", "How True Christians Adorn Divine Teaching (157)", "Be Courageous, and Trust in Jehovah (158)", "Finding Security in a Dangerous World (159)", "Safeguard Your Christian Identity! (160)", "Why Did Jesus Suffer and Die? (161)", "Deliverance From a World of Darkness (162)", "Why Fear the True God? (163)", "Is God Still in Control? (164)", "Whose Values Do You Cherish? (165)", "True Faith—What Is It, and How Is It Shown? (166)", "Act Wisely in a Senseless World (167)", "You Can Feel Safe in This Troubled World! (168)", "Why Be Guided by the Bible? (169)", "Who Is Qualified to Rule Mankind? (170)", "You Can Enjoy Life in Peace Now—And Forever! (171)", "What Is Your Standing With God? (172)", "Is There a True Religion From God’s Standpoint? (173)", "God’s New World—Who Will Qualify to Enter? (174)", "What Marks the Bible as Authentic? (175)", "Real Peace and Security—When? (176)", "Where Can You Get Help in Times of Distress? (177)", "Walk in the Way of Integrity (178)", "Reject Worldly Fantasies, Pursue Kingdom Realities (179)", "The Resurrection—Why That Hope Should Be Real to You (180)", "Is It Later Than You Think? (181)", "What God’s Kingdom Is Doing for Us Now (182)", "Turn Your Eyes Away From Worthless Things! (183)", "Does Death End It All? (184)", "Does the Truth Affect Your Life? (185)", "Unite With God’s Happy People (186)", "Why Would a Loving God Permit Wickedness? (187)", "Is Your Confidence in Jehovah? (188)", "Walking With God Brings Blessings Now and Forever (189)", "A Promise of Perfect Family Happiness (190)", "How Love and Faith Conquer the World (191)", "Are You on the Road to Everlasting Life? (192)", "Rescue From World Distress (193)", "How Godly Wisdom Benefits Us (194)"];
+  const input = document.getElementById('ptTitleInput');
+  const openBtn = document.getElementById('ptThemeOpen');
+  const picker = document.getElementById('ptThemePicker');
+  const search = document.getElementById('ptThemeSearch');
+  const list = document.getElementById('ptThemeList');
+  const closeBtn = document.getElementById('ptThemeClose');
+
+  if(!input || !openBtn || !picker || !search || !list) return;
+
+  // Initialize from saved value (if any)
+  try {
+    const saved = localStorage.getItem('jw-role-ptTitle') || '';
+    if (saved && !input.value) input.value = saved;
+  } catch(_) {}
+
+  function render(items) {
+    list.innerHTML = '';
+    items.forEach((t, idx) => {
+      const li = document.createElement('li');
+      li.style.padding = '8px';
+      li.style.borderTop = '1px dashed var(--border)';
+      if (idx === 0) li.style.borderTop = 'none';
+      li.style.cursor = 'pointer';
+      li.textContent = t;
+      li.addEventListener('click', () => {
+        input.value = t;
+        try { localStorage.setItem('jw-role-ptTitle', t); } catch(_){}
+        picker.style.display = 'none';
+      });
+      list.appendChild(li);
+    });
+  }
+
+  function filter() {
+    const q = (search.value || '').toLowerCase();
+    const out = !q ? THEMES : THEMES.filter(t => t.toLowerCase().includes(q));
+    render(out);
+  }
+
+  function openPicker(){
+    picker.style.display = '';
+    search.value = '';
+    search.focus();
+    filter();
+  }
+
+  openBtn.addEventListener('click', openPicker);
+  input.addEventListener('click', openPicker);
+  closeBtn && closeBtn.addEventListener('click', () => { picker.style.display = 'none'; });
+  search.addEventListener('input', filter);
+
+  // ESC to close
+  document.addEventListener('keydown', (e)=>{
+    if (picker.style.display !== 'none' && e.key === 'Escape') {
+      picker.style.display = 'none';
+    }
+  });
+})();
+</script>
+<script>
+// Compute display date: Saturday of the current Mon–Sun week in Pacific Time.
+// Shows the same Saturday from Monday 00:00 PT through Sunday 23:59 PT.
+// Rolls over to the next Saturday at Monday 00:00 PT.
+(function(){
+  try {
+    // Get "now" in Pacific Time
+    const now = new Date();
+    const pacNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    const day = pacNow.getDay(); // 0=Sun,1=Mon,...,6=Sat
+
+    // Find Monday (start of week) in PT
+    const monday = new Date(pacNow);
+    monday.setDate(pacNow.getDate() - ((day + 6) % 7)); // shift back to Monday
+
+    // Saturday is Monday + 5 days
+    const saturday = new Date(monday);
+    saturday.setDate(monday.getDate() + 5);
+
+    // Format: "Saturday, Month Day, Year ~ 10:30 am"
+    const weekday = saturday.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'America/Los_Angeles' });
+    const mdy = saturday.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'America/Los_Angeles' });
+    const out = weekday + ', ' + mdy + ' ~ 10:30 am';
+
+    const span = document.getElementById('meetingDate');
+    if (span) span.textContent = out;
+  } catch (e) {
+    // fallback: leave blank
+  }
+})();
+</script>
+<!-- === Song Search Enhancer: searchable + persistent + FULL-WIDTH (by ChatGPT) === -->
+<script id="song-search-enhancer">
+(() => {
+  const SONG_SELECT_IDS = ["song1Input","song2Input","song3Input"];
+  const DATALIST_ID = "songsMasterList";
+
+  function ensureDatalist() {
+    if (document.getElementById(DATALIST_ID)) return;
+    const firstSel = document.getElementById(SONG_SELECT_IDS[0]);
+    if (!firstSel) return;
+    const dl = document.createElement("datalist");
+    dl.id = DATALIST_ID;
+    [...firstSel.options].forEach(opt => {
+      if (!opt || !opt.value || opt.disabled) return;
+      const o = document.createElement("option");
+      o.value = (opt.textContent || "").trim();
+      o.setAttribute("data-key", opt.value);
+      dl.appendChild(o);
+    });
+    document.body.appendChild(dl);
+  }
+
+  function findKeyForTypedValue(typed) {
+    const dl = document.getElementById(DATALIST_ID);
+    if (!dl) return null;
+    const opts = [...dl.querySelectorAll("option")];
+    let hit = opts.find(o => o.value.trim() === typed.trim());
+    if (hit) return hit.getAttribute("data-key");
+    const q = typed.trim().toLowerCase();
+    const matches = opts.filter(o => o.value.toLowerCase().includes(q));
+    if (matches.length === 1) return matches[0].getAttribute("data-key");
+    return null;
+  }
+
+  function enhanceSelect(selectId) {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+
+    const wrap = document.createElement("div");
+    wrap.style.display = "grid";
+    wrap.style.gap = "0.25rem";
+
+    const input = document.createElement("input");
+    input.type = "search";
+    input.setAttribute("list", DATALIST_ID);
+    input.setAttribute("placeholder", "Search songs…");
+    input.setAttribute("aria-label", label.textContent + " (search)");
+    input.id = selectId + "_search";
+    input.style.padding = "0.5rem 0.6rem";
+    input.style.border = "1px solid #ccc";
+    input.style.borderRadius = "0.5rem";
+    input.style.fontSize = "1rem";
+    input.style.width = "100%";
+    input.style.boxSizing = "border-box";
+
+    // Hide original select but keep functional
+    sel.style.position = "absolute";
+    sel.style.left = "-9999px";
+    sel.style.width = "1px";
+    sel.style.height = "1px";
+    sel.setAttribute("tabindex", "-1");
+    sel.setAttribute("aria-hidden", "true");
+
+    sel.parentNode.insertBefore(wrap, sel);wrap.appendChild(input);
+
+    const storageKey = "persist_" + selectId;
+
+    function applySelectFromKey(key) {
+      if (!key) return false;
+      const old = sel.value;
+      sel.value = key;
+      if (sel.value != key) {
+        sel.value = old;
+        return false;
+      }
+      const opt = sel.selectedOptions?.[0];
+      input.value = opt ? (opt.textContent || "").trim() : "";
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+      return true;
+    }
+
+    // Restore saved selection
+    const saved = localStorage.getItem(storageKey);
+    if (saved) applySelectFromKey(saved);
+
+    // Sync storage when select changes
+    sel.addEventListener("change", () => {
+      const val = sel.value || "";
+      if (val) localStorage.setItem(storageKey, val);
+      else localStorage.removeItem(storageKey);
+    });
+
+    // Pick from search (on change or Enter)
+    function pickFromInput() {
+      const key = findKeyForTypedValue(input.value);
+      if (key) {
+        applySelectFromKey(key);
+      } else {
+        sel.value = "";
+        sel.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
+    input.addEventListener("change", pickFromInput);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        pickFromInput();
+        input.blur();
+        e.preventDefault();
+      }
+    });
+
+    // Keep in sync if programmatically changed
+    sel.addEventListener("input", () => {
+      const opt = sel.selectedOptions?.[0];
+      input.value = opt ? (opt.textContent || "").trim() : "";
+    });
+
+    // Clear helper
+    sel._clearPersisted = () => {
+      localStorage.removeItem(storageKey);
+      sel.value = "";
+      input.value = "";
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+    };
+  }
+
+  function wireClearAllForSongs() {
+    const btn = document.getElementById("btnClearSaved");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      ["song1Input","song2Input","song3Input"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && typeof el._clearPersisted === "function") {
+          el._clearPersisted();
+        } else {
+          localStorage.removeItem("persist_" + id);
+          if (el) { el.value = ""; el.dispatchEvent(new Event("change", { bubbles: true })); }
+        }
+      });
+    });
+  }
+
+  const init = () => {
+    ensureDatalist();
+    SONG_SELECT_IDS.forEach(enhanceSelect);
+    wireClearAllForSongs();
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+<!-- === /Song Search Enhancer === -->
+<script id="exportImportScript">
+(function(){
+  function collectData() {
+    const data = {};
+    document.querySelectorAll("input[type=text], input[type=search], textarea, select").forEach(el => {
+      if (!el.id) return;
+      data[el.id] = el.value;
+    });
+    document.querySelectorAll("input[type=checkbox]").forEach(el => {
+      if (!el.id) return;
+      data[el.id] = !!el.checked;
+    });
+    const radiosByName = {};
+    document.querySelectorAll("input[type=radio]").forEach(el => {
+      if (!el.name) return;
+      if (!radiosByName[el.name]) radiosByName[el.name] = null;
+      if (el.checked) radiosByName[el.name] = el.id || el.value;
+    });
+    Object.keys(radiosByName).forEach(name => {
+      data["radio::"+name] = radiosByName[name];
+    });
+    return data;
+  }
+
+  function applyData(data) {
+    Object.entries(data).forEach(([key,val]) => {
+      if (key.startsWith("radio::")) {
+        const name = key.slice(7);
+        const wanted = val;
+        if (wanted == null) return;
+        const group = document.querySelectorAll(`input[type=radio][name="${name}"]`);
+        group.forEach(r => {
+          const match = (r.id && r.id === wanted) || (r.value === wanted);
+          if (match) {
+            r.checked = true;
+            r.dispatchEvent(new Event("change", {bubbles:true}));
+          }
+        });
+        return;
+      }
+      const el = document.getElementById(key);
+      if (!el) return;
+      if (el.tagName === "INPUT" && el.type === "checkbox") {
+        el.checked = !!val;
+        el.dispatchEvent(new Event("change", {bubbles:true}));
+        return;
+      }
+      el.value = (val == null ? "" : val);
+      el.dispatchEvent(new Event("change", {bubbles:true}));
+      try {
+        localStorage.setItem("persist_" + key, el.value);
+      } catch(e) {}
+    });
+  }
+
+  function download(filename, text) {
+    const blob = new Blob([text], {type: "application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  }
+
+  const btnExport = document.getElementById("btnExport");
+  const btnImport = document.getElementById("btnImport");
+  const fileInput = document.getElementById("importFile");
+
+  if (btnExport) {
+    btnExport.addEventListener("click", () => {
+      const data = collectData();
+      const stamp = new Date().toISOString().replace(/[:.]/g,"-");
+      download(`saturday-${(function(){const s=new Date().toLocaleString('en-US',{timeZone:'America/Los_Angeles'});const p=s.split(',')[0].split('/');const m=p[0].padStart(2,'0');const d=p[1].padStart(2,'0');const y=p[2];return y+'-'+m+'-'+d;})()}.json`, JSON.stringify(data, null, 2));
+    });
+  }
+  if (btnImport && fileInput) {
+    btnImport.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => {
+      
+const file = e.target.files && e.target.files[0];
+      const fname = (file && file.name || '').toLowerCase();
+      if (!fname.startsWith('saturday-') || !fname.endsWith('.json')) {
+        
+        e.target.value = '';
+        return;
+      }
+      
+if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          applyData(data);
+          
+        } catch (err) {
+          alert("Invalid file format.");
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = "";
+    });
+  }
+})();
+</script>
+<!-- Watchtower Custom Editor Start -->
+<!-- Watchtower Custom Editor End -->
+<style id="pl-custom-editor-style">
+#pl_customEditor {
+  display: none;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 8px;
+  background: #fafafa;
+}
+#pl_customInput {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  box-sizing: border-box;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+#pl_makeChecklist {
+  margin-top: 0.5rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #f6f6f6;
+  cursor: pointer;
+}
+#pl_makeChecklist:hover { background:#e9e9e9; }
+</style>
+<script id="pl-custom-editor-script">
+(function(){
+  function ensureEditor(){
+    const card = document.querySelector("#playlistCard");
+    const checklist = document.querySelector("#pl_checklist");
+    if(!card||!checklist) return;
+    if(document.getElementById("pl_customEditor")) return;
+    const editor = document.createElement("div");
+    editor.id = "pl_customEditor";
+    editor.innerHTML = '<textarea id="pl_customInput"></textarea><div><button id="pl_makeChecklist" type="button">Make checklist</button></div>';
+    checklist.parentNode.insertBefore(editor, checklist);
+  }
+  function buildChecklistFromLines(lines){
+    const container = document.querySelector("#pl_checklist");
+    if(!container) return;
+    container.innerHTML='';
+    const ul = document.createElement('ul');
+    ul.style.listStyle='none'; ul.style.padding='0'; ul.style.margin='0';
+    lines.forEach((raw,i)=>{
+      const text=(raw||'').trim(); if(!text) return;
+      const li=document.createElement('li'); li.style.margin='4px 0';
+      const id='pl_item_'+(i+1);
+      li.innerHTML = '<label style="display:flex;align-items:center;gap:0.5rem;">'
+        + '<input type="checkbox" id="'+id+'"/>'
+        + '<span>'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>'
+        + '</label>';
+      ul.appendChild(li);
+    });
+    container.appendChild(ul);
+  }
+  function bind(){
+    const all = document.getElementById('pl_filterAll');
+    const filtered = document.getElementById('pl_filterFiltered');
+    const custom = document.getElementById('pl_filterCustom');
+    const paste = document.getElementById('pl_filterPaste');
+    const editor = document.getElementById('pl_customEditor');
+    const rules = document.querySelector('#pl_customRules') || document.querySelector('.pl_customRules');
+
+    const update = ()=>{
+      const onPaste = !!(paste && paste.checked);
+      const onCustom = !!(custom && custom.checked);
+      if(editor) editor.style.display = onPaste ? 'block' : 'none';
+      if(rules) rules.style.display = onCustom ? '' : 'none';
+      // All/Filtered hide both editor and rules
+      if(!onPaste && !onCustom){
+        if(editor) editor.style.display = 'none';
+        if(rules) rules.style.display = 'none';
+      }
+    };
+    [all, filtered, custom, paste].forEach(el => { if(el) el.addEventListener('change', update); });
+    const card = document.getElementById('playlistCard'); if(card) card.addEventListener('change', update);
+    update();
+
+    const btn = document.getElementById('pl_makeChecklist');
+    if(btn){
+      btn.addEventListener('click', ()=>{
+        const ta=document.getElementById('pl_customInput'); if(!ta) return;
+        const lines=ta.value.split(/\r?\n/);
+        buildChecklistFromLines(lines);
+        try{ localStorage.setItem('persist_pl_customInput', ta.value); }catch(e){}
+      });
+    }
+    const ta=document.getElementById('pl_customInput');
+    if(ta){
+      try{ const saved=localStorage.getItem('persist_pl_customInput'); if(saved) ta.value=saved; }catch(e){}
+    }
+  }
+  document.addEventListener('DOMContentLoaded', ()=>{ ensureEditor(); bind(); });
+})();
+</script>
+<style id="wt-editor-toggle-style">
+  /* Back button styled like top pills */
+  #pl_backToEditor {
+    display:none;
+    padding:0.55rem 1.1rem;
+    border-radius:9999px;
+    border:1px solid #cfd6de;
+    background:#eef2f7;
+    font-weight:600;
+    box-shadow:0 1px 1px rgba(0,0,0,.03);
+    cursor:pointer;
+    transition:background .15s,border-color .15s,transform .05s;
+    margin: 0.5rem 0;
+  }
+  #pl_backToEditor:hover{ background:#e7edf5; border-color:#c3ccd6; }
+  #pl_backToEditor:active{ transform:translateY(1px); }
+  #pl_customEditor { margin: 0.5rem 0; }
+  #pl_customInput {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+  }
+  #pl_makeChecklist.btn { margin-top: 8px; }
+</style>
+<script id="wt-editor-toggle-script">
+(function(){
+  function ensureEditorUI(){
+    const card = document.querySelector("#playlistCard");
+    const list = document.querySelector("#pl_checklist");
+    if (!card || !list) return;
+
+    // Insert editor (textarea + Make checklist) above checklist if missing
+    let editor = document.getElementById("pl_customEditor");
+    if (!editor) {
+      editor = document.createElement("div");
+      editor.id = "pl_customEditor";
+      editor.style.display = "none"; // only show when Paste is selected
+      editor.innerHTML = ''
+        + '<textarea id="pl_customInput" placeholder=""></textarea>'
+        + '<div><button id="pl_makeChecklist" type="button" class="btn">Make checklist</button></div>';
+      list.parentNode.insertBefore(editor, list);
+    } else {
+      // Ensure Make checklist exists
+      if (!editor.querySelector("#pl_makeChecklist")) {
+        const b = document.createElement("button");
+        b.id = "pl_makeChecklist";
+        b.type = "button";
+        b.className = "btn";
+        b.textContent = "Make checklist";
+        editor.appendChild(b);
+      }
+    }
+
+    // Insert Back button right after editor
+    let back = document.getElementById("pl_backToEditor");
+    if (!back) {
+      back = document.createElement("button");
+      back.id = "pl_backToEditor";
+      back.textContent = "Back";
+      editor.parentNode.insertBefore(back, editor.nextSibling);
+    }
+  }
+
+  function buildChecklistFromLines(lines){
+    const container = document.querySelector("#pl_checklist");
+    if (!container) return;
+    container.innerHTML = "";
+    const ul = document.createElement("ul");
+    ul.className = "list checklist";
+    ul.style.listStyle='none'; ul.style.padding='0'; ul.style.margin='0';
+    lines.forEach((raw, i) => {
+      const txt = (raw || "").trim();
+      if (!txt) return;
+      const id = "pl_item_" + (i+1);
+      const li = document.createElement("li");
+      li.innerHTML = '<label style="display:flex;align-items:center;gap:0.5rem;">'
+        + '<input type="checkbox" id="'+id+'">'
+        + '<span>'+txt.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>'
+        + '</label>';
+      ul.appendChild(li);
+    });
+    container.appendChild(ul);
+  }
+
+  function bind(){
+    const pasteRadio = document.getElementById("pl_filterPaste");
+    const customRadio = document.getElementById("pl_filterCustom");
+    const editor = document.getElementById("pl_customEditor");
+    const back = document.getElementById("pl_backToEditor");
+    const makeBtn = document.getElementById("pl_makeChecklist");
+    const rules = document.getElementById("pl_customFilters");
+
+    const updateMode = () => {
+      const onPaste = !!(pasteRadio && pasteRadio.checked);
+      const onCustom = !!(customRadio && customRadio.checked);
+      if (editor) editor.style.display = onPaste ? "block" : "none";
+      if (back) back.style.display = "none"; // reset on mode change
+      if (rules) rules.classList.toggle("hidden", !onCustom);
+    };
+
+    if (pasteRadio) pasteRadio.addEventListener("change", updateMode);
+    if (customRadio) customRadio.addEventListener("change", updateMode);
+
+    if (makeBtn) {
+      makeBtn.addEventListener("click", () => {
+        const ta = document.getElementById("pl_customInput");
+        const lines = (ta && ta.value ? ta.value : "").split(/\r?\n/);
+        buildChecklistFromLines(lines);
+        try { localStorage.setItem("persist_pl_customInput", ta ? ta.value : ""); } catch(e){}
+        if (editor) editor.style.display = "none";
+        if (back) back.style.display = "inline-block";
+      });
+    }
+
+    if (back) {
+      back.addEventListener("click", () => {
+        if (editor) editor.style.display = "block";
+        back.style.display = "none";
+      });
+    }
+
+    // Restore pasted text if any
+    const ta = document.getElementById("pl_customInput");
+    try {
+      const saved = localStorage.getItem("persist_pl_customInput");
+      if (ta && saved) ta.value = saved;
+    } catch(e){}
+
+    updateMode();
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    ensureEditorUI();
+    bind();
+  });
+})();
+</script>
+<style id="pt-media-backtoggle-style">
+  /* Back button to match pill buttons */
+  #pt_mediaBackBtn {
+    display:none;
+    padding:0.55rem 1.1rem;
+    border-radius:9999px;
+    border:1px solid #cfd6de;
+    background:#eef2f7;
+    font-weight:600;
+    box-shadow:0 1px 1px rgba(0,0,0,.03);
+    cursor:pointer;
+    transition:background .15s,border-color .15s,transform .05s;
+    margin: 0.5rem 0;
+  }
+  #pt_mediaBackBtn:hover{ background:#e7edf5; border-color:#c3ccd6; }
+  #pt_mediaBackBtn:active{ transform:translateY(1px); }
+</style>
+<script id="pt-media-backtoggle-script">
+(function(){
+  function ensureMediaEditorUI(){
+    const card = document.querySelector("#publicTalkCard");
+    if (!card) return;
+    // find Media section's checklist container (uses .checklist-container within card)
+    const container = card.querySelector(".checklist-container");
+    if (!container) return;
+
+    // Find or create textarea for paste input
+    let ta = card.querySelector("textarea");
+    if (!ta) {
+      ta = document.createElement("textarea");
+      ta.style.width = "50%";
+      ta.style.maxWidth = "50%";
+      ta.style.minHeight = "120px";
+      ta.style.boxSizing = "border-box";
+      ta.style.padding = "10px 12px";
+      ta.style.border = "1px solid #e5e7eb";
+      ta.style.borderRadius = "10px";
+      // insert before container
+      container.parentNode.insertBefore(ta, container);
+    }
+
+    // Find or create Make checklist button for Public Talk Media
+    let makeBtn = card.querySelector("#pt_mediaMakeBtn");
+    if (!makeBtn) {
+      makeBtn = document.createElement("button");
+      makeBtn.id = "pt_mediaMakeBtn";
+      makeBtn.className = "btn";
+      makeBtn.type = "button";
+      makeBtn.textContent = "Make checklist";
+      ta.insertAdjacentElement("afterend", makeBtn);
+    }
+
+    // Ensure Back button after textarea+make button
+    let backBtn = card.querySelector("#pt_mediaBackBtn");
+    if (!backBtn) {
+      backBtn = document.createElement("button");
+      backBtn.id = "pt_mediaBackBtn";
+      backBtn.textContent = "Back";
+      makeBtn.insertAdjacentElement("afterend", backBtn);
+    }
+  }
+
+  function buildListFromText(raw){
+    const card = document.querySelector("#publicTalkCard");
+    const container = card && card.querySelector(".checklist-container");
+    if (!container) return;
+    container.innerHTML = "";
+    const ul = document.createElement("ul");
+    ul.className = "list checklist";
+    ul.style.listStyle = "none";
+    ul.style.padding = "0";
+    ul.style.margin = "0";
+    (raw || "").split(/\r?\n/).forEach((line, idx) => {
+      const text = (line||"").trim();
+      if (!text) return;
+      const li = document.createElement("li");
+      li.style.margin = "6px 0";
+      li.innerHTML = '<label style="display:flex;align-items:center;gap:0.5rem;">'
+        + '<input type="checkbox"/>'
+        + '<span>' + text.replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span>'
+        + '</label>';
+      ul.appendChild(li);
+    });
+    container.appendChild(ul);
+  }
+
+  function bindPTMedia(){
+    const card = document.querySelector("#publicTalkCard");
+    if (!card) return;
+    const ta = card.querySelector("textarea");
+    const makeBtn = card.querySelector("#pt_mediaMakeBtn");
+    const backBtn = card.querySelector("#pt_mediaBackBtn");
+    if (!ta || !makeBtn || !backBtn) return;
+
+    makeBtn.addEventListener("click", () => {
+      buildListFromText(ta.value);
+      try { localStorage.setItem("persist_pt_media_text", ta.value); } catch(e){}
+      // hide textarea + make button; show Back
+      ta.style.display = "none";
+      makeBtn.style.display = "none";
+      backBtn.style.display = "inline-block";
+    });
+
+    backBtn.addEventListener("click", () => {
+      // show textarea + make button; hide Back
+      ta.style.display = "block";
+      makeBtn.style.display = "inline-block";
+      backBtn.style.display = "none";
+    });
+
+    // Restore text if exists
+    try {
+      const saved = localStorage.getItem("persist_pt_media_text");
+      if (saved) ta.value = saved;
+    } catch(e){}
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    ensureMediaEditorUI();
+    bindPTMedia();
+  });
+})();
+</script>
+
+
+
+
+<script id="sat-week-range-script">
+(function(){
+  try {
+    // Work in Pacific time
+    const pacNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    const day = pacNow.getDay(); // Sun=0, Mon=1, ... Sat=6
+    const base = new Date(pacNow); base.setHours(0,0,0,0);
+
+    // Monday of the current Pacific week
+    const monday = new Date(base);
+    const deltaToMon = (day === 0 ? -6 : 1 - day); // if Sunday, go back 6 days
+    monday.setDate(base.getDate() + deltaToMon);
+
+    // Sunday of the current week
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    function fmtMonth(d){ return d.toLocaleString('en-US', { month: 'long' }); }
+    function fmtDay(d){ return d.toLocaleString('en-US', { day: 'numeric' }); }
+    function fmtYear(d){ return d.getFullYear(); }
+
+    let text;
+    if (monday.getFullYear() === sunday.getFullYear() && monday.getMonth() === sunday.getMonth()) {
+      // Same month/year: "August 25–31, 2025"
+      text = `${fmtMonth(monday)} ${fmtDay(monday)}–${fmtDay(sunday)}, ${fmtYear(monday)}`;
+    } else if (monday.getFullYear() === sunday.getFullYear()) {
+      // Same year, different months: "September 30 – October 6, 2025"
+      text = `${fmtMonth(monday)} ${fmtDay(monday)} – ${fmtMonth(sunday)} ${fmtDay(sunday)}, ${fmtYear(monday)}`;
+    } else {
+      // Cross-year (rare): "December 30, 2025 – January 5, 2026"
+      text = `${fmtMonth(monday)} ${fmtDay(monday)}, ${fmtYear(monday)} – ${fmtMonth(sunday)} ${fmtDay(sunday)}, ${fmtYear(sunday)}`;
+    }
+
+    const el = document.getElementById('pl_weekRange');
+    if (el) el.textContent = text;
+  } catch(e){ /* silent */ }
+})();
+</script>
+
+</body>
+</html>
+
+<script id="sat-date-rollover-script">
+(function () {
+  try {
+    const pacNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    const day = pacNow.getDay(); // Sun=0, Mon=1, ... Sat=6
+    const base = new Date(pacNow); base.setHours(0,0,0,0);
+
+    // Monday of the current Mon–Sun week in Pacific time
+    const monday = new Date(base);
+    const deltaToMon = (day === 0 ? -6 : 1 - day); // if Sunday, go back 6 days
+    monday.setDate(base.getDate() + deltaToMon);
+
+    // Saturday of THIS week (Mon + 5 days)
+    const target = new Date(monday);
+    target.setDate(monday.getDate() + 5);
+
+    const weekday = target.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'America/Los_Angeles' });
+    const mdy = target.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'America/Los_Angeles' });
+    const out = `${weekday}, ${mdy} ~ 10:30 am`;
+
+    const el = document.getElementById('meetingDate') || document.getElementById('dateLine');
+    if (el) el.textContent = out;
+  } catch (e) { /* silent */ }
+})();
+</script>
