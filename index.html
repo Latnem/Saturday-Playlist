@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
@@ -967,7 +966,7 @@
 <button class="btn-red" id="ptCongEditBtn" title="Edit">✕</button>
 </div>
 </div>
-<div class="field" id="ptTitleEdit"><div class="label"><label for="ptTitleInput">Title:</label></div><div class="controls"><input id="ptTitleInput" placeholder="Select a theme…" readonly="" style="min-width:520px; max-width:840px;" type="text"/><button class="muted-btn" id="ptThemeOpen" title="Select Theme" type="button">Select</button></div></div><!-- Inline Theme Picker (hidden by default) --><div class="card" id="ptThemePicker" style="display:none; padding:12px; margin-top:8px;"><div class="field" style="grid-template-columns: 120px 1fr;"><div class="label">Search:</div><div class="controls"><input id="ptThemeSearch" placeholder="Select the title" type="text"/></div></div><div style="max-height:40vh; overflow:auto; border:1px solid var(--border); border-radius:10px;"><ul class="list" id="ptThemeList" style="padding:8px; margin:0;"></ul></div><div style="display:flex; gap:10px; margin-top:10px;"><button class="muted-btn" id="ptThemeClose" type="button">Close</button><span class="sub">Click a theme to select it.</span></div></div>
+<div class="field" id="ptTitleEdit"><div class="label"><label for="ptTitleInput">Title:</label></div><div class="controls"><input id="ptTitleInput" placeholder="Select a theme…" readonly="" style="min-width:520px; max-width:840px;" type="text"/><button class="muted-btn" id="ptThemeOpen" title="Select Theme" type="button">Select</button></div></div><!-- Inline Theme Picker (hidden by default) --><div class="card" id="ptThemePicker" style="display:none; padding:12px; margin-top:8px;"><div class="field"><div class="label">Search:</div><div class="controls"><input id="ptThemeSearch" placeholder="Select the title" type="text"/></div></div><div style="max-height:40vh; overflow:auto; border:1px solid var(--border); border-radius:10px;"><ul class="list" id="ptThemeList" style="padding:8px; margin:0;"></ul></div><div style="display:flex; gap:10px; margin-top:10px;"><button class="muted-btn" id="ptThemeClose" type="button">Close</button><span class="sub">Click a title to select it.</span></div></div>
 <div class="field hidden" id="ptTitleDisplay">
 <div class="label">Title:</div>
 <div class="controls">
@@ -2345,5 +2344,74 @@ if (!file) return;
   });
 })();
 </script>
+
+
+
+
+<script id="sat-week-range-script">
+(function(){
+  try {
+    // Work in Pacific time
+    const pacNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    const day = pacNow.getDay(); // Sun=0, Mon=1, ... Sat=6
+    const base = new Date(pacNow); base.setHours(0,0,0,0);
+
+    // Monday of the current Pacific week
+    const monday = new Date(base);
+    const deltaToMon = (day === 0 ? -6 : 1 - day); // if Sunday, go back 6 days
+    monday.setDate(base.getDate() + deltaToMon);
+
+    // Sunday of the current week
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    function fmtMonth(d){ return d.toLocaleString('en-US', { month: 'long' }); }
+    function fmtDay(d){ return d.toLocaleString('en-US', { day: 'numeric' }); }
+    function fmtYear(d){ return d.getFullYear(); }
+
+    let text;
+    if (monday.getFullYear() === sunday.getFullYear() && monday.getMonth() === sunday.getMonth()) {
+      // Same month/year: "August 25–31, 2025"
+      text = `${fmtMonth(monday)} ${fmtDay(monday)}–${fmtDay(sunday)}, ${fmtYear(monday)}`;
+    } else if (monday.getFullYear() === sunday.getFullYear()) {
+      // Same year, different months: "September 30 – October 6, 2025"
+      text = `${fmtMonth(monday)} ${fmtDay(monday)} – ${fmtMonth(sunday)} ${fmtDay(sunday)}, ${fmtYear(monday)}`;
+    } else {
+      // Cross-year (rare): "December 30, 2025 – January 5, 2026"
+      text = `${fmtMonth(monday)} ${fmtDay(monday)}, ${fmtYear(monday)} – ${fmtMonth(sunday)} ${fmtDay(sunday)}, ${fmtYear(sunday)}`;
+    }
+
+    const el = document.getElementById('pl_weekRange');
+    if (el) el.textContent = text;
+  } catch(e){ /* silent */ }
+})();
+</script>
+
 </body>
 </html>
+
+<script id="sat-date-rollover-script">
+(function () {
+  try {
+    const pacNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    const day = pacNow.getDay(); // Sun=0, Mon=1, ... Sat=6
+    const base = new Date(pacNow); base.setHours(0,0,0,0);
+
+    // Monday of the current Mon–Sun week in Pacific time
+    const monday = new Date(base);
+    const deltaToMon = (day === 0 ? -6 : 1 - day); // if Sunday, go back 6 days
+    monday.setDate(base.getDate() + deltaToMon);
+
+    // Saturday of THIS week (Mon + 5 days)
+    const target = new Date(monday);
+    target.setDate(monday.getDate() + 5);
+
+    const weekday = target.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'America/Los_Angeles' });
+    const mdy = target.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'America/Los_Angeles' });
+    const out = `${weekday}, ${mdy} ~ 10:30 am`;
+
+    const el = document.getElementById('meetingDate') || document.getElementById('dateLine');
+    if (el) el.textContent = out;
+  } catch (e) { /* silent */ }
+})();
+</script>
