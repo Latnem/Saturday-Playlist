@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Playlist Extractor — EndAction + Auto Inserts (toggle)</title>
+  <title>Playlist Extractor — Saturday (Public Talk & Watchtower)</title>
   <style>
     :root{ --bg:#ffffff; --text:#0b0c10; --muted:#6b7280; --muted-2:#9ca3af; --border:#e5e7eb; --row:#fbfbfb; --row-alt:#f7f7f7; --done:#9ca3af; --primary:#059669; --primary-ink:#fff; }
     *{box-sizing:border-box}
@@ -20,7 +20,7 @@
     .error{margin:14px 0;color:#b91c1c;background:#fee2e2;border:1px solid #fecaca;padding:10px 12px;border-radius:10px;white-space:pre-wrap;}
     .results{margin-top:18px;border:1px solid var(--border);border-radius:14px;overflow:hidden;}
     .results header{padding:12px 14px;border-bottom:1px solid var(--border);background:#fafafa;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
-    .header-left{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+    .header-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
     .toggle{display:inline-flex;align-items:center;gap:8px;font-size:.95rem;}
     table{width:100%;border-collapse:collapse;}
     th,td{border-top:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:middle;}
@@ -30,6 +30,17 @@
     .col-check{width:44px;}
     tr.done td:nth-child(2){ text-decoration: line-through; color: var(--done); }
     .insert-row td{font-weight:800;}
+
+    /* Back arrow button (twin to Tuesday) */
+    .back-btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:34px;height:34px;border-radius:8px;
+      border:1px solid var(--border);background:#fff;color:#111827;
+      cursor:pointer;font-size:18px;line-height:1;
+    }
+    .back-btn:hover{background:#f3f4f6;}
+    .back-btn:focus{outline:2px solid #93c5fd; outline-offset:2px;}
+    .muted{color:var(--muted);}
   </style>
 </head>
 <body>
@@ -49,13 +60,15 @@
     <section id="results" class="results" hidden>
       <header>
         <div class="header-left">
+          <button id="backBtn" class="back-btn" title="Back" aria-label="Back" hidden>←</button>
           <label class="toggle"><input id="toggleInserts" type="checkbox" checked> Inserts</label>
+          <span class="muted">Saturday</span>
         </div>
         <span id="resultCount" class="muted">0 items</span>
       </header>
       <table id="labelsTable">
         <thead>
-          <tr><th class="col-check"></th><th>Results</th></tr>
+          <tr><th class="col-check"></th><th></th></tr> <!-- Removed "Results" -->
         </thead>
         <tbody></tbody>
       </table>
@@ -71,7 +84,9 @@
       results=document.getElementById('results'),
       resultCount=document.getElementById('resultCount'),
       tbody=document.querySelector('#labelsTable tbody'),
-      toggleInserts=document.getElementById('toggleInserts');
+      toggleInserts=document.getElementById('toggleInserts'),
+      dropzone=document.getElementById('dropzone'),
+      backBtn=document.getElementById('backBtn');
 
     let chosenFile=null, baseLabels=[], showInserts=true;
 
@@ -81,9 +96,40 @@
 
     toggleInserts.addEventListener('change',()=>{ showInserts = toggleInserts.checked; render(); });
 
-    fileInput.addEventListener('change',e=>{chosenFile=e.target.files[0];extractBtn.disabled=!chosenFile;updateFileMeta();});
+    fileInput.addEventListener('change',e=>{
+      chosenFile=e.target.files[0];
+      extractBtn.disabled=!chosenFile;
+      updateFileMeta();
+    });
+
+    // Back arrow: show uploader, hide results
+    backBtn.addEventListener('click', ()=>{
+      results.hidden = true;
+      backBtn.hidden = true;
+      dropzone.hidden = false;
+      dropzone.style.display = ''; // reset
+      dropzone.setAttribute('aria-hidden','false');
+      // Clear table
+      tbody.innerHTML = '';
+      resultCount.textContent = '0 items';
+      baseLabels = [];
+      // allow re-selecting a new file
+      fileInput.value = '';
+      extractBtn.disabled = true;
+    });
+
     extractBtn.addEventListener('click',async()=>{
       clearError();tbody.innerHTML="";baseLabels=[];
+
+      // Robust immediate hide of upload area
+      dropzone.hidden = true;
+      dropzone.style.display = 'none';
+      dropzone.setAttribute('aria-hidden','true');
+
+      // Show results area and back arrow right away
+      results.hidden = false;
+      backBtn.hidden = false;
+
       try{
         const buf=await chosenFile.arrayBuffer();
         const zip=await JSZip.loadAsync(buf);
@@ -94,11 +140,17 @@
         const db=new SQL.Database(new Uint8Array(dbArrayBuffer));
 
         const {labels}=extractFromEndAction(db);
-        baseLabels=labels.slice(); // array of strings
-
-        results.hidden=false;
+        baseLabels=labels.slice();
         render();
-      }catch(e){showError(e.message||String(e));}
+      }catch(e){
+        // If failed, restore uploader
+        results.hidden = true;
+        backBtn.hidden = true;
+        dropzone.hidden = false;
+        dropzone.style.display = '';
+        dropzone.setAttribute('aria-hidden','false');
+        showError(e.message||String(e));
+      }
     });
 
     // ===== EndAction-driven extraction with corrected mapping; Continue merges THROUGH first Freeze/Stop =====
@@ -136,21 +188,21 @@
         action: remapEndAction(r.__ea) // actual: 'continue' | 'freeze' | 'stop' | 'unknown'
       }));
 
-      const SEP = ' \u2192 '; // " → "
+      const SEP = ' \u2192 ';
       const out = [];
       let i=0;
       while(i < norm.length){
         const cur = norm[i];
         if(!cur.label){ i++; continue; }
 
-        // Actual Freeze/Stop outside a chain => standalone
+        // Freeze/Stop outside a chain => standalone
         if(cur.action === 'freeze' || cur.action === 'stop'){
           out.push(cur.label);
           i++;
           continue;
         }
 
-        // Actual Continue => merge forward through Continues AND INCLUDE first Freeze/Stop as terminator
+        // Continue => merge forward through Continues AND INCLUDE first Freeze/Stop as terminator
         if(cur.action === 'continue'){
           const parts = [cur.label];
           let j = i + 1;
@@ -235,7 +287,7 @@
           else if(['3','freeze','freeze-frame','freeze_frame','hold'].includes(s)) dbMeaning = 'freeze';
         }
       }
-      // Your correction: continue→freeze, stop→continue, freeze→stop, pause→freeze
+      // Correction mapping
       if(dbMeaning === 'continue') return 'freeze';
       if(dbMeaning === 'stop') return 'continue';
       if(dbMeaning === 'freeze') return 'stop';
@@ -243,11 +295,7 @@
       return 'unknown';
     }
 
-    // ===== Auto Inserts (toggleable) =====
-    
-    // ===== Auto Inserts (toggleable) =====
-    
-    // ===== Auto Inserts (toggleable) =====
+    // ===== Saturday Auto Inserts (with Public Talk & Watchtower) =====
     function applyAutoInserts(list){
       if(!showInserts) return list.map(t => ({__insert:false, text:t}));
 
@@ -260,23 +308,22 @@
       const publicTalkIndex = Math.min(2, withInserts.length);
       withInserts.splice(publicTalkIndex, 0, {__insert:true, text:'PUBLIC TALK'});
 
-      // Detect the *next* numbered item (1. .. 162.) *after* PUBLIC TALK
+      // Detect the next numbered item (1. .. 162.) after PUBLIC TALK
       const reNum = /(?:^|\s)(?:1[0-5]\d|16[0-2]|[1-9]\d|[1-9])\.(?=\s|$)/;
       let nextNumberIdx = -1;
       for(let i=publicTalkIndex+1; i<withInserts.length; i++){
         const entry = withInserts[i];
-        if(entry.__insert) continue; // ignore other inserts
+        if(entry.__insert) continue;
         if(reNum.test(entry.text)) { nextNumberIdx = i; break; }
       }
 
       if(nextNumberIdx !== -1){
-        // Insert MIDDLE SONG *before* that next numbered item
+        // Insert MIDDLE SONG before that next numbered item
         withInserts.splice(nextNumberIdx, 0, {__insert:true, text:'MIDDLE SONG'});
         // After insertion, numbered item shifts to nextNumberIdx+1
-        // Insert WATCHTOWER *after* the numbered item => at nextNumberIdx+2
+        // Insert WATCHTOWER after the numbered item => at nextNumberIdx+2
         withInserts.splice(nextNumberIdx+2, 0, {__insert:true, text:'WATCHTOWER'});
       }
-      // If none found after PUBLIC TALK, skip both MIDDLE SONG and WATCHTOWER
 
       // Insert CLOSING SONG as second last line
       const pos = Math.max(0, withInserts.length - 1);
@@ -284,8 +331,6 @@
 
       return withInserts;
     }
-
-
 
     // ===== Rendering =====
     function onCheckChange(e){
