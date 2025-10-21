@@ -594,6 +594,45 @@ input[type="search"].song-input, .song-input { width: 45ch !important; min-width
 </style>
 
 
+
+<style id="toolbar-white-and-button-colors">
+  /* Keep toolbar white */
+  .topbar { background: #ffffff !important; }
+
+  /* Keep buttons aligned on the right (preserves existing layout) */
+  .topbar .right { margin-left: auto !important; }
+
+  /* Make Load gray with white text; hover 1–2 shades darker */
+  #btnLoad {
+    background: #888 !important;
+    color: #fff !important;
+    border-color: #888 !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+  }
+  #btnLoad:hover { background: #666 !important; }
+
+  /* Ensure Save stays blue with darker hover (1–2 shades) */
+  #btnSave, #btnSaveMain {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border: 1px solid #1d4ed8 !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+  }
+  #btnSave:hover, #btnSaveMain:hover { background: #1d4ed8 !important; }
+
+  /* Clear stays red with darker hover */
+  #btnClear, #btnClearMain {
+    background: #BF2F13 !important;
+    color: #ffffff !important;
+    border: 1px solid #BF2F13 !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+  }
+  #btnClear:hover, #btnClearMain:hover { background: #a2270f !important; }
+</style>
+
 </head>
 <body>
 <datalist id="PTList">
