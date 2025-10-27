@@ -522,8 +522,6 @@ input[list="songs162_closing"] {
   box-sizing: border-box;
 }
 </style>
-
-
 <style id="song-inline-ac-style-v6">
 /* Inline Autocomplete for song inputs (white/gray scrollbar) */
 input[type="search"].song-input, .song-input { width: 45ch !important; min-width: 45ch !important; max-width: 45ch !important; box-sizing: border-box; }
@@ -541,12 +539,6 @@ input[type="search"].song-input, .song-input { width: 45ch !important; min-width
 .ac-menu::-webkit-scrollbar-thumb:hover{ background-color:#bdbdbd; }
 .ac-menu{ scrollbar-width:thin; scrollbar-color:#cfcfcf #f7f7f7; }
 </style>
-
-
-
-
-
-
 <style id="ptlist-width">
 #ptTitle {
   display: block;
@@ -557,17 +549,6 @@ input[type="search"].song-input, .song-input { width: 45ch !important; min-width
   box-sizing: border-box;
 }
 </style>
-
-
-
-
-
-
-
-
-
-
-
 <style id="week-date-style">
 .week-date{
   font-weight: 500;
@@ -579,22 +560,6 @@ input[type="search"].song-input, .song-input { width: 45ch !important; min-width
   .week-date{ display:block; margin-left: 0; margin-top: 4px; }
 }
 </style>
-
-
-
-<style id="week-date-center-style">
-.center-title{ text-align:center; margin:0; }
-.center-date{
-  text-align:center;
-  margin-top:4px;
-  font-size:1.5rem; /* subheading size */
-  font-weight:500;
-}
-.week-date{ white-space:normal; }
-</style>
-
-
-
 <style id="toolbar-white-and-button-colors">
   /* Keep toolbar white */
   .topbar { background: #ffffff !important; }
@@ -632,8 +597,61 @@ input[type="search"].song-input, .song-input { width: 45ch !important; min-width
   }
   #btnClear:hover, #btnClearMain:hover { background: #a2270f !important; }
 </style>
+<style id="congHeader-center-style">#congHeader { text-align: center; }</style><style id="week-date-center-style">
+.center-date {
+  text-align: center;
+  margin-top: 4px;
+  margin-bottom: 12px;  /* whitespace after the date */
+  font-size:1.4rem;    /* subheading size */
+  font-weight: 500;
+}
+.week-date { white-space: normal; }
+</style><style id="headerCard-tight-gap-after">
+/* Tighten the header/date card inside, add space after */
+#congHeader { margin-bottom: 0 !important; }
+.center-date { margin-top: 0 !important; margin-bottom: 0 !important; }
 
-</head>
+#headerCard {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 12px !important;  /* whitespace AFTER the card */
+}
+</style><style id="two-tone-56">
+/* Two-tone header inside the card — each line 56px high */
+#headerCard {
+  border-radius: 10px;
+  overflow: hidden;
+}
+#headerCard .header-top,
+#headerCard .header-bottom {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+#headerCard {
+  background: #F1F5F8;
+}
+#headerCard .header-top {
+  background: transparent;
+  color:#2c3e50;
+  font-weight: 600;
+  font-size: 1.6rem;
+}
+#headerCard .header-bottom {
+  background: #ffffff;
+  color:#2c3e50;
+}
+#headerCard .header-bottom #weekDate {
+  font-size:1.4rem;
+  font-weight: 500;
+  text-align: center;
+  margin: 0;
+}
+#headerCard { margin-bottom: 8px; }
+</style></head>
 <body>
 <datalist id="PTList">
 <option value="How Well Do You Know God? (1)">How Well Do You Know God? (1)</option>
@@ -831,7 +849,6 @@ input[type="search"].song-input, .song-input { width: 45ch !important; min-width
 <option value="Rescue From World Distress (193)">Rescue From World Distress (193)</option>
 <option value="How Godly Wisdom Benefits Us (194)">How Godly Wisdom Benefits Us (194)</option>
 </datalist>
-
 <datalist id="songs162_opening">
 <option value="1 — Jehovah’s Attributes">1 — Jehovah’s Attributes</option>
 <option value="2 — Jehovah Is Your Name">2 — Jehovah Is Your Name</option>
@@ -1324,7 +1341,6 @@ input[type="search"].song-input, .song-input { width: 45ch !important; min-width
 <option value="161 — To Do Your Will Is My Delight">161 — To Do Your Will Is My Delight</option>
 <option value="162 — My Spiritual Need">162 — My Spiritual Need</option>
 </datalist>
-
 <!-- Embedded Extractor (data-URI) -->
 <section aria-label="Extractor Page" class="" id="extractorView" style="margin:8px 0 12px;">
 <div class="card" style="max-width:960px;margin:0 auto;padding:12px 16px 16px;">
@@ -1332,8 +1348,7 @@ input[type="search"].song-input, .song-input { width: 45ch !important; min-width
 <div style="display:flex;justify-content:flex-start;margin-bottom:8px;">
 <button class="btn" id="btnBackFromExtractor">Back</button>
 </div>
-<iframe allow="clipboard-read; clipboard-write" id="extractorFrame" scrolling="auto" style="width:100%;height:80vh;border:0;display:block;border-radius:10px;" src="extractor_saturday.html"></iframe>
-
+<iframe allow="clipboard-read; clipboard-write" id="extractorFrame" scrolling="auto" src="extractor_saturday.html" style="width:100%;height:80vh;border:0;display:block;border-radius:10px;"></iframe>
 </div>
 </section>
 <div id="appRoot">
@@ -1512,12 +1527,7 @@ input[type="search"].song-input, .song-input { width: 45ch !important; min-width
 </div>
 </div>
 <!-- TOP HEADER (shared) -->
-<div class="card">
-<h2 class="center-title">Chatsworth Sign Language</h2>
-<div id="weekDate" class="week-date center-date"></div>
-<br/>
-</h2>
-</div>
+<div class="card" id="headerCard"><div class="header-top"><div id="titleLine">Chatsworth Sign Language Congregation</div></div><div class="header-bottom"><div class="week-date center-date" id="weekDate"></div></div></div>
 <!-- ===== WEEK OF Oct 27–Nov 2, 2025 (FILLED) ===== -->
 <div class="schedule" id="week-2025-10-27" style="display:block">
 <div class="page-grid" style="display:grid">
@@ -1540,15 +1550,15 @@ input[type="search"].song-input, .song-input { width: 45ch !important; min-width
 </div>
 <div class="item item-grid">
 <div class="ltxt"><div class="item-label">Opening Song</div></div>
-<div class="ritem"><input class="narrow-input song-input" type="search" placeholder="Select a song"/></div>
+<div class="ritem"><input class="narrow-input song-input" placeholder="Select a song" type="search"/></div>
 </div>
 <div class="item item-grid">
 <div class="ltxt"><div class="item-label">Middle Song</div></div>
-<div class="ritem"><input class="narrow-input song-input" type="search" placeholder="Select a song"/></div>
+<div class="ritem"><input class="narrow-input song-input" placeholder="Select a song" type="search"/></div>
 </div>
 <div class="item item-grid">
 <div class="ltxt"><div class="item-label">Closing Song</div></div>
-<div class="ritem"><input class="narrow-input song-input" type="search" placeholder="Select a song"/></div>
+<div class="ritem"><input class="narrow-input song-input" placeholder="Select a song" type="search"/></div>
 </div>
 </div>
 </div>
@@ -3397,9 +3407,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 })();
 </script>
-
-
-
 <script id="song-inline-ac-script-v6">
 document.addEventListener("DOMContentLoaded", function(){
   function getOptions(id){
@@ -3552,10 +3559,6 @@ document.addEventListener("DOMContentLoaded", function(){
   if (inputs.title)   wrapInlineAC(inputs.title,   opts.title);
 });
 </script>
-
-
-
-
 <script id="week-date-script">
 document.addEventListener('DOMContentLoaded', function(){
   function upcomingSaturday(d){
@@ -3583,7 +3586,55 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 });
 </script>
-
-
-</body>
+</div><script id="saturday-inline-date-script">
+(function(){
+  function startOfWeekMonday(d){
+    const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const day = (x.getDay() + 6) % 7; // 0=Mon
+    x.setDate(x.getDate() - day);
+    x.setHours(0,0,0,0);
+    return x;
+  }
+  function formatLong(d){
+    try {
+      return new Intl.DateTimeFormat(undefined, { weekday:'long', month:'long', day:'numeric', year:'numeric' }).format(d);
+    } catch(e){
+      const m = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+      const w = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+      return w[d.getDay()] + ", " + m[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
+    }
+  }
+  const now = new Date();
+  const monday = startOfWeekMonday(now);
+  const saturday = new Date(monday);
+  saturday.setDate(monday.getDate() + 5); // Saturday
+  const el = document.getElementById('weekDate');
+  if (el) { el.textContent = formatLong(saturday) + " ~ 10:30 AM"; }
+})();
+</script><script id="saturday-weekdate-56">
+(function(){
+  function startOfWeekMonday(d){
+    const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const day = (x.getDay() + 6) % 7; // 0 = Monday
+    x.setDate(x.getDate() - day);
+    x.setHours(0,0,0,0);
+    return x;
+  }
+  function formatLong(d){
+    try {
+      return new Intl.DateTimeFormat(undefined, { weekday:'long', month:'long', day:'numeric', year:'numeric' }).format(d);
+    } catch(e){
+      const m = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+      const w = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+      return w[d.getDay()] + ", " + m[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
+    }
+  }
+  const now = new Date();
+  const monday = startOfWeekMonday(now);
+  const saturday = new Date(monday);
+  saturday.setDate(monday.getDate() + 5); // Saturday of current week (rolls at Monday 00:00)
+  const el = document.getElementById('weekDate');
+  if (el) { el.textContent = formatLong(saturday) + " ~ 10:30 AM"; }
+})();
+</script></body>
 </html>
