@@ -310,11 +310,27 @@
 
       // Detect the next numbered item (1. .. 162.) after PUBLIC TALK
       const reNum = /(?:^|\s)(?:1[0-5]\d|16[0-2]|[1-9]\d|[1-9])\.(?=\s|$)/;
+
+      // JW Library bookmark labels may also put the song number at the END,
+      // e.g. "Encourage One Another 90" instead of "90. Encourage One Another".
+      function isSongBookmark(text){
+        const value = String(text || '').trim();
+        if(reNum.test(value)) return true;
+
+        const trailing = value.match(/^(.*?)[\s\u00a0]+(1[0-5]\d|16[0-3]|[1-9]\d|[1-9])\.?$/);
+        if(!trailing) return false;
+        const title = trailing[1].trim();
+
+        // Avoid mistaking scripture/media bookmark labels for songs.
+        if(/[:→]/.test(title)) return false;
+        if(/^(?:art|r|pic|picture|subheading|title-col)\b/i.test(title)) return false;
+        return (title.match(/[A-Za-z]+(?:['’][A-Za-z]+)?/g) || []).length >= 2;
+      }
       let nextNumberIdx = -1;
       for(let i=publicTalkIndex+1; i<withInserts.length; i++){
         const entry = withInserts[i];
         if(entry.__insert) continue;
-        if(reNum.test(entry.text)) { nextNumberIdx = i; break; }
+        if(isSongBookmark(entry.text)) { nextNumberIdx = i; break; }
       }
 
       if(nextNumberIdx !== -1){
